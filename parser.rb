@@ -1,21 +1,57 @@
 require "./rdparse.rb"
 require "./types.rb"
 require "./math.rb"
+require "./logical.rb"
 
 class CSMMParser
   def initialize
 
     @logger = LoggerFactory.get()
 
+    @variables = {}
     @csmmParser = Parser.new("CSMM Parser") do
       token(/\s+/) # Ignore whitespace
       token(/\*\*/) {|m| m }
 
+      # token(/!=/) {|m| m }
+      # token(/==/) {|m| m }
+      # token(/>=/) {|m| m }
+      # token(/<=/) {|m| m }
+      # token(/>/) {|m| m }
+      # token(/</) {|m| m }
+
       token(/\d+/) {|m| m.to_i } # Any string of digits is converted to an Integer
       token(/\w+\b/) {|m| m }
+
       token(/./) {|m| m }
+
+      start :program do
+        match(:assignment)
+        # match(:comparison)
+      end
+
+      rule :assignment do
+        match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
+          Variable.new(name, type_class.new(value))
+        end
+      end
+
+      # # Boolean Logic
+      # rule :bool_expr do
+      #   match(:comparison)
+      #   match(:logical_expr)
+      # end
+
+      # rule :comparison do
+      #   match(:logical_expr, "==", :logical_expr) {|a, _, b| ComparisonNode.new(a, :==, b) }
+      # end
+
+      # rule :logical_expr do
+      #   match(:expr)
+      # end
       
-      start :expr do 
+      # Arithmetic
+      rule :expr do 
         match(:expr, '+', :term) {|a, _, b| ArithNode.new(a, :+, b) }
         match(:expr, '-', :term) {|a, _, b| ArithNode.new(a, :-, b) }
         match(:term)
@@ -28,19 +64,32 @@ class CSMMParser
       end
 
       rule :exponent do
-        match(:atom, "**", :exponent) {|a, _, b| ArithNode.new(a, :**, b) }
-        match(:atom)
+        match(:factor, "**", :exponent) {|a, _, b| ArithNode.new(a, :**, b) }
+        match(:factor)
       end
 
-      rule :atom do
-        # Match the result of evaluating an integer expression, which
-        # should be an Integer
+      rule :factor do
         match('(', :expr, ')') {|_, a, _| a }
-        match(Integer) { | a | Int.new(a) }
+        match(:literal)
+      end
+
+      rule :ID do
+        match(/[a-z_]\w*/)
+      end
+
+      rule :builtins_type do
+        match("int") { |_| Int }
+        match("bool") { |_| Bool }
+        match("char") { |_| Char }
+        match("void") { |_| Void }
+      end
+
+      rule :literal do
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
-
+        match(Integer) { | a | Int.new(a) }
       end
+
     end
   end
   
@@ -56,6 +105,8 @@ class CSMMParser
 
 end
 
-data = File.read("test.csmm")
-
-CSMMParser.new.parse(data)
+if __FILE__ == $0
+  data = File.read("math.csmm")
+  # data = File.read("bool.csmm")
+  CSMMParser.new.parse(data)
+end
