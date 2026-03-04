@@ -1,6 +1,6 @@
 require "./base.rb"
 
-class Int < Eval
+class Int < BaseNode
   def initialize(number)
     @number = number
   end
@@ -11,7 +11,7 @@ class Int < Eval
    
 end
 
-class Bool < Eval
+class Bool < BaseNode
   def initialize(val)
     @val = val
   end

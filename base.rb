@@ -1,4 +1,4 @@
-class Eval
+class BaseNode
   def evaluate()
     return
   end
