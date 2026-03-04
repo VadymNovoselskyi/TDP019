@@ -20,6 +20,7 @@
 ## Avancerad feature:
 - Arv i flera led
 
+# Exempelkod:
 ```
 
 class Animal
@@ -94,4 +95,41 @@ while (counter < 3)
     counter++;
 }
 
+```
+
+# BNF-grammatik:
+```
+program ::= class_decls ;
+class_decls ::= class_decl class_decls | nil
+class_decl ::= "class" ID "{" member_decls "}"
+
+member_decls ::= member_decl member_decls | nil
+member_decl ::= field_decl | method_decl
+
+field_decl ::= type ID "=" expr ";"
+method_decl ::= type ID "(" opt_param_list ")" block
+
+opt_param_list ::= param_list | nil
+param_list ::= param param_list_tail ;
+param_list_tail::= "," param param_list_tail | nil
+param ::= type ID
+
+type ::= builtin_type | ID
+builtin_type ::= "void" | "int" | "bool" | "char"
+
+block ::= "{" stmt_list "}"
+stmt_list ::= stmt stmt_list | nil
+stmt ::= block | if_stmt | while_stmt | for_stmt | return_stmt | expr | ";"
+
+if_stmt ::= "if" "(" expr ")" stmt opt_else
+opt_else ::= "else" stmt | nil
+while_stmt ::= "while" "(" expr ")" stmt
+for_stmt ::= "for" "(" expr ";" expr ";" expr ")" stmt
+return_stmt ::= "return" expr ";"
+
+expr ::= expr "+" term | expr "-" term | term
+term ::= term "*" exponent | term "/" exponent | exponent
+exponent ::= factor "**" exponent | factor
+factor ::= ID | literal | "(" expr ")"
+literal ::= INT | STRING | "true" | "false" | "null"
 ```
