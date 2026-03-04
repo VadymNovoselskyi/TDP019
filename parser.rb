@@ -28,7 +28,7 @@ class CSMMParser
       end
 
       rule :exponent do
-        match(:exponent, "**", :atom) {|a, _, b| ArithNode.new(a, :**, b) }
+        match(:atom, "**", :exponent) {|a, _, b| ArithNode.new(a, :**, b) }
         match(:atom)
       end
 
