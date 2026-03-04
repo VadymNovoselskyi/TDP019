@@ -2,10 +2,10 @@ require "./base.rb"
 
 class ComparisonNode < BaseNode
   def initialize(lhs, op, rhs)
-    if lhs.class != rhs.class
-      raise "Invalid input to ComparisonNode. Expected #{lhs.class} == #{rhs.class}"
-    end
-    
+    # if lhs.class != rhs.class
+    #   raise "Invalid input to ComparisonNode. Expected #{lhs.class} == #{rhs.class}"
+    # end
+
       @lhs = lhs
       @op = op
       @rhs = rhs
@@ -18,7 +18,7 @@ end
 
 class LogicNode < BaseNode
   def initialize(lhs, op, rhs)
-    if !lhs.is_a(Bool) || !rhs.is_a(Bool) 
+    if !(lhs.is_a?(Bool) || lhs.is_a?(ComparisonNode)) || !(rhs.is_a?(Bool) || rhs.is_a?(ComparisonNode))
       raise "Invalid input to LogicNode. Expected Bool Bool, received: #{lhs.class} #{rhs.class}"
     end
     

@@ -13,12 +13,15 @@ class CSMMParser
       token(/\s+/) # Ignore whitespace
       token(/\*\*/) {|m| m }
 
-      # token(/!=/) {|m| m }
-      # token(/==/) {|m| m }
-      # token(/>=/) {|m| m }
-      # token(/<=/) {|m| m }
-      # token(/>/) {|m| m }
-      # token(/</) {|m| m }
+      token(/!=/) {|m| m }
+      token(/==/) {|m| m }
+      token(/>=/) {|m| m }
+      token(/<=/) {|m| m }
+      token(/>/) {|m| m }
+      token(/</) {|m| m }
+      token(/&&/) {|m| m }
+      token(/\|\|/) {|m| m }
+      token(/\^/) {|m| m }
 
       token(/\d+/) {|m| m.to_i } # Any string of digits is converted to an Integer
       token(/\w+\b/) {|m| m }
@@ -31,24 +34,35 @@ class CSMMParser
       end
 
       rule :assignment do
+        match(:builtins_type, :ID, "=", :logical_expr, ";") do |type_class, name, _, value, _|  
+          Variable.new(name, type_class.new(value))
+        end
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
           Variable.new(name, type_class.new(value))
         end
       end
 
-      # # Boolean Logic
-      # rule :bool_expr do
-      #   match(:comparison)
-      #   match(:logical_expr)
-      # end
+      # Boolean Logic
+      rule :logical_expr do
+        match("(", :logical_expr, ")") {|_, a, _| a }
 
-      # rule :comparison do
-      #   match(:logical_expr, "==", :logical_expr) {|a, _, b| ComparisonNode.new(a, :==, b) }
-      # end
+        match(:logical_expr, "&&", :logical_expr) {|a, _, b| LogicNode.new(a, :&, b) }
+        match(:logical_expr, "||", :logical_expr) {|a, _, b| LogicNode.new(a, :|, b) }
+        match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
+        
+        match(:comparison)
+        match(:literal)
+      end
 
-      # rule :logical_expr do
-      #   match(:expr)
-      # end
+      rule :comparison do
+        match(:expr, "==", :expr) {|a, _, b| ComparisonNode.new(a, :==, b) }
+        match(:expr, "!=", :expr) {|a, _, b| ComparisonNode.new(a, "!=", b) }
+        match(:expr, ">", :expr) {|a, _, b| ComparisonNode.new(a, :>, b) }
+        match(:expr, "<", :expr) {|a, _, b| ComparisonNode.new(a, :<, b) }
+        match(:expr, ">=", :expr) {|a, _, b| ComparisonNode.new(a, :>=, b) }
+        match(:expr, "<=", :expr) {|a, _, b| ComparisonNode.new(a, :<=, b) }
+      end
+      
       
       # Arithmetic
       rule :expr do 
