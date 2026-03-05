@@ -5,6 +5,10 @@ class Variable < BaseNode
     @name = name
     @value = value
   end
+
+  def eval_type()
+    return @value.eval_type()
+  end
     
   def evaluate()
     return @value.evaluate
@@ -15,6 +19,10 @@ end
 class Int < BaseNode
   def initialize(number)
     @number = number
+  end
+
+  def eval_type()
+    return self.class
   end
     
   def evaluate()
@@ -27,6 +35,10 @@ class Bool < BaseNode
   def initialize(val)
     @val = val
   end
+
+  def eval_type()
+    return self.class
+  end
     
   def evaluate()
     return @val
@@ -37,6 +49,10 @@ class Char < BaseNode
   def initialize(val)
     @val = val
   end
+
+  def eval_type()
+    return self.class
+  end
     
   def evaluate()
     return @val
@@ -45,6 +61,10 @@ end
 
 class Void < BaseNode
   def initialize()
+  end
+
+  def eval_type()
+    return self.class
   end
     
   def evaluate()

@@ -2,15 +2,20 @@ require "./base.rb"
 
 class ComparisonNode < BaseNode
   def initialize(lhs, op, rhs)
-    # if lhs.class != rhs.class
-    #   raise "Invalid input to ComparisonNode. Expected #{lhs.class} == #{rhs.class}"
-    # end
-
-      @lhs = lhs
-      @op = op
-      @rhs = rhs
-  end
+    if (lhs.eval_type() != rhs.eval_type())
+      raise "Invalid input to ComparisonNode. Expected #{lhs.eval_type()} == #{rhs.eval_type()}"
+    end
     
+    @lhs = lhs
+    @op = op
+    @rhs = rhs
+
+  end
+
+  def eval_type()
+    return Bool
+  end
+
   def evaluate()
     return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
@@ -18,13 +23,17 @@ end
 
 class LogicNode < BaseNode
   def initialize(lhs, op, rhs)
-    if !(lhs.is_a?(Bool) || lhs.is_a?(ComparisonNode)) || !(rhs.is_a?(Bool) || rhs.is_a?(ComparisonNode))
-      raise "Invalid input to LogicNode. Expected Bool Bool, received: #{lhs.class} #{rhs.class}"
+    if (lhs.eval_type() != Bool || rhs.eval_type() != Bool)
+      raise "Invalid input to LogicNode. Expected Bool Bool, received: #{lhs.eval_type()} #{rhs.eval_type()}"
     end
     
-      @lhs = lhs
-      @op = op
-      @rhs = rhs
+    @lhs = lhs
+    @op = op
+    @rhs = rhs
+  end
+
+  def eval_type()
+    return Bool
   end
     
   def evaluate()
@@ -34,10 +43,14 @@ end
 
 class NotNode < BaseNode
   def initialize(value)
-    if !value.is_a(Bool) 
-      raise "Invalid input to NotNode. Expected Bool, received: #{value.class}"
+    if (value.eval_type() != Bool) 
+      raise "Invalid input to NotNode. Expected Bool, received: #{value.eval_type()}"
     end
     @value = value
+  end
+
+  def eval_type()
+    return Bool
   end
 
   def evaluate()
