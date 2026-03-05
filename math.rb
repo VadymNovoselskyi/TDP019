@@ -3,6 +3,10 @@ require "./types.rb"
 
 class ArithNode < BaseNode
   def initialize(lhs, op, rhs)
+      if (![Int, Char].include?(lhs.eval_type()) || ![Int, Char].include?(rhs.eval_type()))
+        raise "Operator #{op} cannot be applied to operands of type #{lhs.eval_type()} and #{rhs.eval_type()}"
+      end
+      
       @lhs = lhs
       @op = op
       @rhs = rhs

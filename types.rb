@@ -53,7 +53,7 @@ end
 
 class Char < BaseNode
   def initialize(val)
-    @val = val
+    @val = val.codepoints[1]
   end
 
   def eval_type()
@@ -62,6 +62,10 @@ class Char < BaseNode
     
   def evaluate()
     return @val
+  end
+
+   def to_s()
+    return evaluate().chr()
   end
 end
 

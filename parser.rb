@@ -24,6 +24,7 @@ class CSMMParser
       token(/\^/) {|m| m }
 
       token(/\d+/) {|m| m.to_i } # Any string of digits is converted to an Integer
+      token(/\'.\'/) {|m| m }
       token(/\w+\b/) {|m| m }
 
       token(/./) {|m| m }
@@ -102,6 +103,7 @@ class CSMMParser
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
         match(Integer) { | a | Int.new(a) }
+        match(/\'.\'/) { | a | Char.new(a) }
       end
 
     end
