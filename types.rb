@@ -1,9 +1,15 @@
 require "./base.rb"
 
 class Variable < BaseNode
-  def initialize(name, value)
+  def initialize(type_class, name, value)
+    if type_class != value.eval_type()
+      raise "Trying to assign #{value.eval_type()} to a variablel of type #{type_class}"
+    end
+
+    @type_class = type_class
     @name = name
     @value = value
+
   end
 
   def eval_type()

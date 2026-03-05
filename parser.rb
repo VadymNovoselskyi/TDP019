@@ -35,10 +35,10 @@ class CSMMParser
 
       rule :assignment do
         match(:builtins_type, :ID, "=", :logical_expr, ";") do |type_class, name, _, value, _|  
-          Variable.new(name, type_class.new(value))
+          Variable.new(type_class, name, value)
         end
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
-          Variable.new(name, type_class.new(value))
+          Variable.new(type_class, name, value)
         end
       end
 
