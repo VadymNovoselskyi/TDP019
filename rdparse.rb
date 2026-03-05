@@ -55,7 +55,7 @@ class LoggerFactory
 
     # Make output more readable by modifying the default formatter
     logger.formatter = proc do |severity, datetime, progname, msg|
-      "[#{datetime.strftime("%H:%M:%S")}] #{severity}: #{msg}\n"
+      "#{severity}: #{msg}\n"
     end
     
     logger.level = Logger::DEBUG # Change level as needed, INFO for normal running and DEBUG for detailed tracing / figuring out bugs
@@ -126,18 +126,18 @@ class Rule
   end
   
   def parse
-    @logger.debug("Parsing rule '#{@name}' at pos #{@parser.pos}")
+    @logger.debug("[Rule:parse] Parsing rule '#{@name}' at pos #{@parser.pos}")
 
     @parser.rule_stack.push(@name)
-    @logger.debug("Entering parse for rule '#{@name}' at pos #{@parser.pos}")
-    @logger.debug("Current rule stack: #{@parser.rule_stack.inspect}")
+    @logger.debug("[Rule:parse] Entering parse for rule '#{@name}' at pos #{@parser.pos}")
+    @logger.debug("[Rule:parse] Current rule stack: #{@parser.rule_stack.inspect}")
 
     # Try non-left-recursive matches first, to avoid infinite recursion
     match_result = try_matches(@matches)
-    @logger.debug("Initial match result for rule '#{@name}' at pos #{@parser.pos}: #{match_result.inspect}")
+    @logger.debug("[Rule:parse] Initial match result for rule '#{@name}' at pos #{@parser.pos}: #{match_result.inspect}")
     if match_result.nil?
       @parser.rule_stack.pop # Remove current rule from stack
-      @logger.warn("No matches found for rule '#{@name}' at pos #{@parser.pos}")
+      @logger.warn("[Rule:parse] No matches found for rule '#{@name}' at pos #{@parser.pos}")
       return nil 
     end
 
@@ -150,7 +150,7 @@ class Rule
       if result.nil?
         #@logger.debug("No more left-recursive matches for rule '#{@name}' at pos #{@parser.pos}, final result: #{match_result.inspect}")
         
-        @logger.debug("Exiting parse for rule '#{@name}' at pos #{@parser.pos} with result: #{match_result.inspect}")
+        @logger.debug("[Rule:parse] Exiting parse for rule '#{@name}' at pos #{@parser.pos} with result: #{match_result.inspect}")
 
         # Each level of the rule stack will print in oposite order
         # For example 2 might result in the following stack:
@@ -158,7 +158,7 @@ class Rule
         # Once the match finishes we will return one level higher and complete the match for [:expr, :term, :dice]
         # and then return again and again until the full match for :expr is complete
         # More complex expressiosn will have deeper and more hard to follow stacks 
-        @logger.info("Rule '#{@name}' final result #{match_result.inspect}. Pos: #{@parser.pos}. Match stack: #{@parser.rule_stack.inspect}")
+        @logger.info("[Rule:parse] Rule '#{@name}' final result #{match_result.inspect}. Pos: #{@parser.pos}. Match stack: #{@parser.rule_stack.inspect}")
 
         # Store trace for summary output
         ParseTrace.add_trace(@name, match_result, @parser.rule_stack.clone)
@@ -168,7 +168,7 @@ class Rule
         return match_result
       end
 
-      @logger.debug("Left-recursive match found for rule '#{@name}' at pos #{@parser.pos}, new result: #{result.inspect} overwriting previous result: #{match_result.inspect}")
+      @logger.debug("[Rule:parse] Left-recursive match found for rule '#{@name}' at pos #{@parser.pos}, new result: #{result.inspect} overwriting previous result: #{match_result.inspect}")
       match_result = result
     end
 
@@ -182,7 +182,7 @@ class Rule
     # Begin at the current position in the input string of the parser
     start = @parser.pos
     matches.each do |match|
-      @logger.debug("Trying pattern #{match.pattern.inspect} for rule '#{@name}' at pos #{start}")
+      @logger.debug("[Rule:try_matches] Trying pattern #{match.pattern.inspect} for rule '#{@name}' at pos #{start}")
       # pre_result is a previously available result from evaluating expressions
       result = pre_result.nil? ? [] : [pre_result]
 
@@ -199,7 +199,7 @@ class Rule
             result = nil
             break
           end
-          @logger.debug("Matched '#{@name} = #{match.pattern[index..-1].inspect}'")
+          @logger.debug("[Rule:try_matches] Matched '#{@name} = #{match.pattern[index..-1].inspect}'")
         else
           # Otherwise, we consume the token as part of applying this rule
           # This is where we match actual tokens like '+', '-', 'd' or Integer that do not correspond to other rules
@@ -211,11 +211,11 @@ class Rule
             else
               pattern = match.pattern
             end
-            @logger.debug("Matched token '#{nt}' as part of rule '#{@name} <= #{pattern.inspect}'")
+            @logger.debug("[Rule:try_matches] Matched token '#{nt}' as part of rule '#{@name} <= #{pattern.inspect}'")
           else
             result = nil
-            @logger.debug("Pattern #{match.pattern.inspect} failed at pos #{@parser.pos}")
-            @logger.debug("Expected token #{token.inspect} but did not find it")
+            @logger.debug("[Rule:try_matches] Pattern #{match.pattern.inspect} failed at pos #{@parser.pos}")
+            @logger.debug("[Rule:try_matches] Expected token #{token.inspect} but did not find it")
             break
           end
         end # pattern.each
@@ -227,7 +227,7 @@ class Rule
         else
           match_result = result[0]
         end
-        @logger.debug("'#{@parser.string[start..@parser.pos-1]}' matched '#{@name}' and generated '#{match_result.inspect}'") unless match_result.nil?
+        @logger.debug("[Rule:try_matches] '#{@parser.string[start..@parser.pos-1]}' matched '#{@name}' and generated '#{match_result.inspect}'") unless match_result.nil?
         break
       else
         # If this rule did not match the current token list, move
@@ -265,7 +265,7 @@ class Parser
     @tokens = []
     @string = string.clone
     until string.empty? # while there is still string left to tokenize
-      @logger.debug("Tokenizing remainder: #{string.inspect}")
+      @logger.debug("[Parser:tokenize] Tokenizing remainder: #{string.inspect}")
       
       # Try all token patterns to see which one matches the start of 'string'
       # Return true if any matched
@@ -273,15 +273,15 @@ class Parser
         match = tok.pattern.match(string)
         # The regular expression of a token has matched the beginning of 'string'
         if match
-          @logger.debug("String #{match[0].inspect} consumed")
+          @logger.debug("[Parser:tokenize] String #{match[0].inspect} consumed")
           # Also, evaluate this expression by using the block
           # associated with the token
           if tok.block
             result = tok.block.call(match.to_s)
-            @logger.debug("Token produced: #{result.inspect} of type #{result.class}")
+            @logger.debug("[Parser:tokenize] Token produced: #{result.inspect} of type #{result.class}")
             @tokens << result # Add last in token list
           else
-            @logger.debug("No token block for #{match[0].inspect}, skipping")
+            @logger.debug("[Parser:tokenize] No token block for #{match[0].inspect}, skipping")
           end
           # consume the match and proceed with the rest of the string
           string = match.post_match
@@ -293,7 +293,7 @@ class Parser
       end
 
       unless matched
-        @logger.error("Unable to lex '#{string}'")
+        @logger.error("[Parser:tokenize] Unable to lex '#{string}'")
         raise ParseError, "unable to lex '#{string}'"
       end
     end
@@ -301,13 +301,13 @@ class Parser
   
   def parse(string)
 
-    @logger.info("Starting parse of string: #{string.inspect}")
+    @logger.info("[Parser:parse] Starting parse of string: #{string.inspect}")
 
     # First, split the string according to the "token" instructions given.
     # Afterwards @tokens contains all tokens that are to be parsed. 
     tokenize(string)
 
-    @logger.info("Tokens after tokenize: #{@tokens.inspect}")
+    @logger.info("[Parser:parse] Tokens after tokenize: #{@tokens.inspect}")
 
     # These variables are used to match if the total number of tokens
     # are consumed by the parser
@@ -318,15 +318,15 @@ class Parser
     begin
       result = @start.parse
     rescue => e
-      @logger.error("Parse failed at pos #{@pos}, max_pos #{@max_pos}: #{e.class}: #{e.message}")
-      @logger.debug("Expected tokens around failure: #{@expected.inspect}")
+      @logger.error("[Parser:parse] Parse failed at pos #{@pos}, max_pos #{@max_pos}: #{e.class}: #{e.message}")
+      @logger.debug("[Parser:parse] Expected tokens around failure: #{@expected.inspect}")
       raise
     end
 
     # If there are unparsed extra tokens, signal error
     if @pos != @tokens.size
-      @logger.error("Parse error at pos #{@pos}, max_pos #{@max_pos}: expected '#{@expected.join(', ')}', found '#{@tokens[@max_pos].inspect}' #{@tokens[@max_pos].class}")
-      @logger.info("All tokens were expected to be consumed, but #{@tokens.size - @pos} tokens remain unparsed. This indicates a syntax error in the input compared with the given rules.")
+      @logger.error("[Parser:parse] Parse error at pos #{@pos}, max_pos #{@max_pos}: expected '#{@expected.join(', ')}', found '#{@tokens[@max_pos].inspect}' #{@tokens[@max_pos].class}")
+      @logger.info("[Parser:parse] All tokens were expected to be consumed, but #{@tokens.size - @pos} tokens remain unparsed. This indicates a syntax error in the input compared with the given rules.")
       raise ParseError, "Parse error. expected: '#{@expected.join(', ')}', found '#{@tokens[@max_pos]}' #{@tokens[@max_pos].class}"
     end
 
@@ -363,13 +363,13 @@ class Parser
     return tok if tok == :empty
     t = next_token
     if @pos - 1 > @max_pos
-      @logger.debug("Updating max_pos to #{@pos - 1}, clearing expected tokens")
+      @logger.debug("[Parser:expect] Updating max_pos to #{@pos - 1}, clearing expected tokens")
       @max_pos = @pos - 1
       @expected = []
     end
-    @logger.debug("Expecting #{tok.inspect}, got #{t.inspect} at pos #{@pos - 1}")
+    @logger.debug("[Parser:expect] Expecting #{tok.inspect}, got #{t.inspect} at pos #{@pos - 1}")
     return t if tok === t
-    @logger.debug("Token mismatch: expected #{tok.inspect} but found #{t.inspect}")
+    @logger.debug("[Parser:expect] Token mismatch: expected #{tok.inspect} but found #{t.inspect}")
     @expected << tok if @max_pos == @pos - 1 && !@expected.include?(tok)
     return nil
   end
