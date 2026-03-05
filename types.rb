@@ -13,7 +13,7 @@ class Variable < BaseNode
   end
 
   def eval_type()
-    return @value.eval_type()
+    return @type_class
   end
     
   def evaluate()
