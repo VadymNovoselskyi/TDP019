@@ -106,7 +106,7 @@ class_decl ::= "class" ID "{" member_decls "}"
 member_decls ::= member_decl member_decls | nil
 member_decl ::= field_decl | method_decl
 
-field_decl ::= type ID "=" expr ";"
+field_decl ::= type ID "=" logical_expr ";"| type ID "=" expr ";"
 method_decl ::= type ID "(" opt_param_list ")" block
 
 opt_param_list ::= param_list | nil
@@ -127,9 +127,14 @@ while_stmt ::= "while" "(" expr ")" stmt
 for_stmt ::= "for" "(" expr ";" expr ";" expr ")" stmt
 return_stmt ::= "return" expr ";"
 
+logical_expr ::= logical_expr "&&" logical_expr | logical_expr "||" logical_expr | "(" logical_expr ")" | comparison | literal
+comparison ::= expr "==" expr | expr "!=" expr | expr ">" expr | expr "<" expr | expr ">=" expr | expr "<=" expr
+
 expr ::= expr "+" term | expr "-" term | term
 term ::= term "*" exponent | term "/" exponent | exponent
 exponent ::= factor "**" exponent | factor
 factor ::= ID | literal | "(" expr ")"
 literal ::= INT | STRING | "true" | "false" | "null"
+
+ID ::= /[a-zA-Z_]\w*/
 ```

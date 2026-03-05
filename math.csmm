@@ -1,1 +1,1 @@
-bool a = true && (true != false) && (10 + 20 != 20);
+bool a = false || true;
