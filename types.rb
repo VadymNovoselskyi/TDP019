@@ -1,8 +1,9 @@
 require "./base.rb"
 
 class Variable < BaseNode
-  def initialize(type_class, name, value)
-    if type_class != value.eval_type()
+  attr_accessor :type_class, :name, :value 
+  def initialize(type_class, name, value = nil)
+    if (value != nil && type_class != value.eval_type())
       raise "Trying to assign #{value.eval_type()} to a variablel of type #{type_class}"
     end
 
@@ -17,6 +18,10 @@ class Variable < BaseNode
   end
     
   def evaluate()
+    if (@value == nil) 
+      return nil
+      # raise "Use of unassigned variable #{@name}"
+    end
     return @value.evaluate
   end
    
@@ -79,5 +84,61 @@ class Void < BaseNode
     
   def evaluate()
     return
+  end
+end
+
+class ClassType
+   attr_accessor :name
+  def initialize(name, member_variables, member_functions)
+    @name = name
+    @member_variables = member_variables
+    @member_functions = member_functions
+  end
+
+  def new_instance()
+    return ClassInstanceType.new(@member_variables, @member_functions, @name)
+  end
+
+  def evaluate()
+    if (name != "Program")
+      raise "Cant evaluate cass type definition of class #{name}"
+    end
+    instance = new_instance()
+    return instance.run_function("main", [])
+  end
+end
+
+class ClassInstanceType 
+  def initialize(member_variables, member_functions, class_name)
+    @class_name = class_name
+    @scope = {}
+    if (member_variables == nil) 
+      member_variables = []
+    end
+
+    if (member_functions == nil) 
+      member_functions = []
+    end
+
+    for variable in member_variables
+      # TODO!! Check copy stuff
+      @scope[variable.name] = variable
+    end
+
+    for function in member_functions
+      # TODO!! Check copy stuff
+      @scope[function.name] = function
+    end
+  end
+
+  def get_attribute(name)
+    return @scope[name].evaluate()
+  end
+
+  def run_function(name, args)
+    if (@scope[name] == nil)
+      raise "Class #{@class_name} doesn't have a function named: #{name}"
+    end
+    return @scope[name].evaluate(args)
   end
 end

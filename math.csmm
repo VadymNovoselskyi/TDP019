@@ -1,3 +1,12 @@
-bool someFunc() {
-    bool a = (true && false) == (true == false);
+class Test123 {
+    char a;
+}
+
+class Program {
+    int tmp;
+    int tmp2;
+
+#    void help() {
+#        Test123 abc = new Test123()
+#    }
 }

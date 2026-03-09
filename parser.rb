@@ -10,6 +10,7 @@ class CSMMParser
 
     @variables = {}
     @csmmParser = Parser.new("CSMM Parser") do
+      token(/#.*/)
       token(/\s+/) # Ignore whitespace
       token(/\*\*/) {|m| m }
 
@@ -30,7 +31,45 @@ class CSMMParser
       token(/./) {|m| m }
 
       start :program do
-        match(:method_decls)
+        match(:class_decls)
+      end
+
+      rule :class_decls do
+       match(:class_decl, :class_decls) do | decl, decls |
+          if (decls == :empty) 
+            decls = []
+          end
+          decls.append(decl)
+          decls
+        end
+       match(:empty)
+      end
+
+      rule :class_decl do
+         match("class", :ID, "{", :member_decls, "}") do |_, class_name, _, decls, _ | 
+          ClassType.new(class_name, decls, nil)
+        end
+      end
+
+      rule :member_decls do
+        match(:member_decl, :member_decls) do | decl, decls |
+          if (decls == :empty) 
+            decls = []
+          end
+          decls.append(decl)
+          decls
+        end
+        match(:empty)
+      end
+
+      rule :member_decl do 
+        match(:field_decl)
+      end
+
+      rule :field_decl do
+        match(:builtins_type, :ID, ";") do |type_class, name, _|  
+          Variable.new(type_class, name)
+        end 
       end
 
       rule :method_decls do
@@ -159,9 +198,9 @@ class CSMMParser
   end
   
   def parse(data)
-    print "[CSMMParser] "
     result = @csmmParser.parse data
-    puts "=> #{result.evaluate()}"
+    program_class = result.find { | e | e.name == "Program" }
+    puts "=> #{program_class.evaluate()}"
   end
 
 end
