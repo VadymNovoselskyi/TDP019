@@ -30,45 +30,78 @@ class CSMMParser
       token(/./) {|m| m }
 
       start :program do
+        match(:method_decl)
+      end
+
+      rule :method_decl do 
+        match(:builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") do | type, id , _, params, _,  _, stmt_list, _ |
+          puts "#{type} #{id} is #{stmt_list[0]}"
+          stmt_list[0]
+        end
+      end
+
+      rule :opt_param_list do
+        match(:param, :param_list_tail)
+        match(:empty)
+      end
+
+      rule :param_list_tail do
+        match(",", :param, :param_list_tail)
+        match(:empty)
+      end
+
+      rule :param do
+        match(:builtins_type, :ID)
+      end
+
+      rule :stmt_list do 
+        match(:stmt, :stmt_list) do | stmt, stmt_list | 
+          if (stmt_list == :empty)
+            stmt_list = []
+          end
+
+          stmt_list.append(stmt)
+          stmt_list
+        end
+        match(:empty)
+      end
+
+      rule :stmt do 
         match(:assignment)
-        # match(:comparison)
       end
 
       rule :assignment do
-        match(:builtins_type, :ID, "=", :logical_expr, ";") do |type_class, name, _, value, _|  
-          Variable.new(type_class, name, value)
-        end
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
           Variable.new(type_class, name, value)
         end
       end
 
-      # Boolean Logic
-      rule :logical_expr do
-        match("(", :logical_expr, ")") {|_, a, _| a }
-
-        match(:logical_expr, "&&", :logical_expr) {|a, _, b| LogicNode.new(a, :&, b) }
-        match(:logical_expr, "||", :logical_expr) {|a, _, b| LogicNode.new(a, :|, b) }
-        match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
-        
-        match(:comparison)
-        match(:literal)
-      end
-
-      rule :comparison do
+      rule :expr do
         match(:expr, "==", :expr) {|a, _, b| ComparisonNode.new(a, :==, b) }
         match(:expr, "!=", :expr) {|a, _, b| ComparisonNode.new(a, "!=", b) }
         match(:expr, ">", :expr) {|a, _, b| ComparisonNode.new(a, :>, b) }
         match(:expr, "<", :expr) {|a, _, b| ComparisonNode.new(a, :<, b) }
         match(:expr, ">=", :expr) {|a, _, b| ComparisonNode.new(a, :>=, b) }
         match(:expr, "<=", :expr) {|a, _, b| ComparisonNode.new(a, :<=, b) }
+
+        match(:logical_expr)
+        match(:arith_expr)
       end
-      
+
+      # Boolean Logic
+      rule :logical_expr do
+        match(:logical_expr, "&&", :logical_expr) {|a, _, b| LogicNode.new(a, :&, b) }
+        match(:logical_expr, "||", :logical_expr) {|a, _, b| LogicNode.new(a, :|, b) }
+        match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
+        
+        match("(", :logical_expr, ")") {|_, a, _| a }
+        match(:literal)
+      end      
       
       # Arithmetic
-      rule :expr do 
-        match(:expr, '+', :term) {|a, _, b| ArithNode.new(a, :+, b) }
-        match(:expr, '-', :term) {|a, _, b| ArithNode.new(a, :-, b) }
+      rule :arith_expr do 
+        match(:arith_expr, '+', :term) {|a, _, b| ArithNode.new(a, :+, b) }
+        match(:ariths_expr, '-', :term) {|a, _, b| ArithNode.new(a, :-, b) }
         match(:term)
       end
       
