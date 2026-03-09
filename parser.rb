@@ -30,14 +30,26 @@ class CSMMParser
       token(/./) {|m| m }
 
       start :program do
-        match(:method_decl)
+        match(:method_decls)
       end
 
+      rule :method_decls do
+        match(:method_decl, :method_decls) {| method, methods | 
+          if (methods == :empty)
+            methods= []
+          end
+
+          methods.append(method)
+          methods
+        }
+        match(:empty)
+      end
+      
       rule :method_decl do 
-        match(:builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") do | type, id , _, params, _,  _, stmt_list, _ |
+        match(:builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { | type, id , _, params, _,  _, stmt_list, _ |
           puts "#{type} #{id} is #{stmt_list[0]}"
           stmt_list[0]
-        end
+        }
       end
 
       rule :opt_param_list do
@@ -55,14 +67,14 @@ class CSMMParser
       end
 
       rule :stmt_list do 
-        match(:stmt, :stmt_list) do | stmt, stmt_list | 
+        match(:stmt, :stmt_list) { | stmt, stmt_list | 
           if (stmt_list == :empty)
             stmt_list = []
           end
 
           stmt_list.append(stmt)
           stmt_list
-        end
+        }
         match(:empty)
       end
 
