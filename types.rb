@@ -27,6 +27,14 @@ class Variable < BaseNode
    
 end
 
+class ClassVariable < Variable
+  attr_accessor :access_attr
+  def initialize(type_class, name, access_attr)
+    super(type_class, name, nil)
+    @access_attr = access_attr
+  end
+end
+
 class Int < BaseNode
   def initialize(number)
     @number = number
@@ -109,9 +117,22 @@ class ClassType
 end
 
 class ClassInstanceType 
-  def initialize(member_variables, member_functions, class_name)
+  def initialize(member_variables, member_functions, class_name, super_class = nil)
+    @super = super_class
     @class_name = class_name
-    @scope = {}
+
+    @variable_scope = {
+      :public => {},
+      :private => {},
+      :protected => {}
+    }
+
+    @function_scope = {
+      :public => {},
+      :private => {},
+      :protected => {}
+    }
+
     if (member_variables == nil) 
       member_variables = []
     end
@@ -122,23 +143,63 @@ class ClassInstanceType
 
     for variable in member_variables
       # TODO!! Check copy stuff
-      @scope[variable.name] = variable
+      @variable_scope[variable.access_attr.to_sym][variable.name] = variable
     end
 
     for function in member_functions
       # TODO!! Check copy stuff
-      @scope[function.name] = function
+      @function_scope[function.name] = function
     end
   end
 
-  def get_attribute(name)
-    return @scope[name].evaluate()
+# calle can be "outside" "inside" or "subclass"
+  def get_attribute(name, callee = "outside")
+
+    if (@variable_scope[:public][name] != nil)
+      return @variable_scope[:public][name]
+    end
+
+    if (callee == "inside" || callee == "subclass")
+      if (@variable_scope[:private][name] != nil)
+        return @variable_scope[:private][name]
+      end
+    end
+
+    if (callee == "subclass")
+      if (@variable_scope[:protected][name] != nil)
+        return @variable_scope[:protected][name]
+      end
+    end
+
+    if (@super != nil)
+      return @super.get_attribute(name, "subclass")
+    end
+
+    raise "Class #{@class_name} doesn't have a variable named: #{name}"
+    
   end
 
-  def run_function(name, args)
-    if (@scope[name] == nil)
-      raise "Class #{@class_name} doesn't have a function named: #{name}"
+  def run_function(name, args, callee = "outside")
+    if (@function_scope[:public][name] != nil)
+      return @function_scope[:public][name].evaluate(args)
     end
-    return @scope[name].evaluate(args)
+    if (callee == "inside" || callee == "subclass")
+      if (@function_scope[:private][name] != nil)
+        return @function_scope[:private][name].evaluate(args)
+      end
+    end
+
+    if (callee == "subclass")
+      if (@function_scope[:protected][name] != nil)
+        return @function_scope[:protected][name].evaluate(args)
+      end
+    end
+
+    if (@super != nil)
+      return @super.run_function(name, args, "subclass")
+    end
+
+    
+    raise "Class #{@class_name} doesn't have a function named: #{name}"
   end
 end

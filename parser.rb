@@ -67,9 +67,16 @@ class CSMMParser
       end
 
       rule :field_decl do
-        match(:builtins_type, :ID, ";") do |type_class, name, _|  
-          Variable.new(type_class, name)
+        match(:access_modifiers, :builtins_type, :ID, ";") do |access, type_class, name, _|  
+          ClassVariable.new(type_class, name, access)
         end 
+      end
+
+      rule :access_modifiers do
+        match("public")
+        match("private")
+        match("protected")
+        match(:empty) { "public" }
       end
 
       rule :method_decls do
