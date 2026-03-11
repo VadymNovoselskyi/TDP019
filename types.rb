@@ -1,16 +1,18 @@
 require "./base.rb"
 
 class Function < BaseNode
-  attr_accessor :return_type, :name, :args, :executables 
-  def initialize(return_type, name, args, executables)  
+  attr_accessor :access_attr, :return_type, :name, :args, :executables 
+  def initialize(access_attr, return_type, name, args, executables)  
     if !return_type.is_a?(Void) && executables.length == 0
       raise "No executables/return for a function that is not void"
     end
+    # puts "access_attr: #{access_attr}"
     # puts "return_type: #{return_type}"
     # puts "name: #{name}"
     # puts "args: #{args}"
     # puts "executables: #{executables}"
 
+    @access_attr = access_attr
     @return_type = return_type
     @name = name
     @args = args
@@ -128,8 +130,18 @@ end
 
 class ClassType
    attr_accessor :name
-  def initialize(name, member_variables, member_functions)
+  def initialize(name, member_declarations)
     @name = name
+    member_variables = []
+    member_functions = []
+    for declaration in member_declarations
+      if declaration.is_a?(ClassVariable)
+        member_variables.append(declaration)
+      elsif declaration.is_a?(Function)
+        member_functions.append(declaration)
+      end
+    end
+
     @member_variables = member_variables
     @member_functions = member_functions
   end
@@ -179,7 +191,7 @@ class ClassInstanceType
 
     for function in member_functions
       # TODO!! Check copy stuff
-      @function_scope[function.name] = function
+      @function_scope[function.access_attr.to_sym][function.name] = function
     end
   end
 

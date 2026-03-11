@@ -47,7 +47,7 @@ class CSMMParser
 
       rule :class_decl do
          match("class", :ID, "{", :member_decls, "}") do |_, class_name, _, decls, _ | 
-          ClassType.new(class_name, decls, nil)
+          ClassType.new(class_name, decls)
         end
       end
 
@@ -68,34 +68,23 @@ class CSMMParser
       end
 
       rule :field_decl do
-        match(:access_modifiers, :builtins_type, :ID, ";") do |access, type_class, name, _|  
+        match(:access_modifier, :builtins_type, :ID, ";") do |access, type_class, name, _|  
           ClassVariable.new(type_class, name, access)
         end 
       end
+      
+      rule :method_decl do 
+        match(:access_modifier, :builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
+          | access, type, id , _, params, _,  _, stmt_list, _ |
+          Function.new(access, type, id, params, stmt_list)
+        }
+      end
 
-      rule :access_modifiers do
+      rule :access_modifier do
         match("public")
         match("private")
         match("protected")
         match(:empty) { "public" }
-      end
-
-      rule :method_decls do
-        match(:method_decl, :method_decls) {| method, methods | 
-          if (methods == :empty)
-            methods= []
-          end
-
-          methods.append(method)
-          methods
-        }
-        match(:empty)
-      end
-      
-      rule :method_decl do 
-        match(:builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { | type, id , _, params, _,  _, stmt_list, _ |
-          Function.new(type, id, params, stmt_list)
-        }
       end
 
       rule :opt_param_list do
