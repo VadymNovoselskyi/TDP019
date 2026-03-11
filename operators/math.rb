@@ -1,5 +1,5 @@
 require "./base.rb"
-require "./types.rb"
+require "./types/primitives.rb"
 
 class ArithNode < BaseNode
   def initialize(lhs, op, rhs)

@@ -1,7 +1,12 @@
 require "./rdparse.rb"
-require "./types.rb"
-require "./math.rb"
-require "./logical.rb"
+
+require "./types/primitives.rb"
+require "./types/variable.rb"
+require "./types/function.rb"
+require "./types/class.rb"
+
+require "./operators/math.rb"
+require "./operators/logical.rb"
 
 class CSMMParser
   def initialize

@@ -1,4 +1,5 @@
 require "./base.rb"
+require "./types/primitives.rb"
 
 class ComparisonNode < BaseNode
   def initialize(lhs, op, rhs)
