@@ -1,4 +1,9 @@
 class Program {
+    private int tmp;
+    public int tmp2;
+    protected int tmp3;
+    int tmp4;
+
     int main() {
         int a = 2;
         return a;
