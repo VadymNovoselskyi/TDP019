@@ -143,16 +143,22 @@ class CSMMParser
       end
 
       rule :expr do
-        match(:expr, "==", :expr) {|a, _, b| ComparisonNode.new(a, :==, b) }
-        match(:expr, "!=", :expr) {|a, _, b| ComparisonNode.new(a, "!=", b) }
-        match(:expr, ">", :expr) {|a, _, b| ComparisonNode.new(a, :>, b) }
-        match(:expr, "<", :expr) {|a, _, b| ComparisonNode.new(a, :<, b) }
-        match(:expr, ">=", :expr) {|a, _, b| ComparisonNode.new(a, :>=, b) }
-        match(:expr, "<=", :expr) {|a, _, b| ComparisonNode.new(a, :<=, b) }
+        match(:expr, :expr_op, :expr) do | lhs, op, rhs |
+          ComparisonNode.new(lhs, op, rhs)
+        end
 
         match(:logical_expr)
         match(:arith_expr)
         match(:literal)
+      end
+
+      rule :expr_op do 
+        match("==") { :== }
+        match("!=") { "!=" }
+        match(">") { :> }
+        match("<") { :< }
+        match(">=") { :>= }
+        match("<=") { :<= }
       end
 
       # Boolean Logic
