@@ -8,6 +8,22 @@ require "./types/class.rb"
 require "./operators/math.rb"
 require "./operators/logical.rb"
 
+reserved_words = [
+  "return",
+  "class",
+  "if",
+  "else",
+  "while",
+  "for",
+  "true",
+  "false",
+  "nil",
+  "public",
+  "private",
+  "protected"
+]
+$id_regex = /^(?!#{reserved_words.join('|')})\w*/
+
 class CSMMParser
   def initialize
 
@@ -41,13 +57,9 @@ class CSMMParser
 
       rule :class_decls do
        match(:class_decl, :class_decls) do | decl, decls |
-          if (decls == :empty) 
-            decls = []
-          end
           decls.append(decl)
-          decls
         end
-       match(:empty)
+       match(:empty) { [] }
       end
 
       rule :class_decl do
@@ -58,13 +70,9 @@ class CSMMParser
 
       rule :member_decls do
         match(:member_decl, :member_decls) do | decl, decls |
-          if (decls == :empty) 
-            decls = []
-          end
           decls.append(decl)
-          decls
         end
-        match(:empty)
+        match(:empty) { []}
       end
 
       rule :member_decl do 
@@ -103,7 +111,8 @@ class CSMMParser
       end
 
       rule :param do
-        match(:builtins_type, :ID)
+        match(:builtins_type, :ID) { | type_class, name |
+          Variable.new(type_class, name)}
       end
 
       rule :stmt_list do 
@@ -128,6 +137,9 @@ class CSMMParser
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
           Variable.new(type_class, name, value)
         end
+        match(:ID, "=", :expr, ";") do |name, _, value, _| 
+          Reassign.new(name, value)
+        end
       end
 
       rule :expr do
@@ -140,6 +152,7 @@ class CSMMParser
 
         match(:logical_expr)
         match(:arith_expr)
+        match(:literal)
       end
 
       # Boolean Logic
@@ -149,7 +162,9 @@ class CSMMParser
         match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
         
         match("(", :logical_expr, ")") {|_, a, _| a }
-        match(:literal)
+        
+        match("true") {| a | Bool.new(true) }
+        match("false") {| a | Bool.new(false) }
       end      
       
       # Arithmetic
@@ -172,11 +187,11 @@ class CSMMParser
 
       rule :factor do
         match('(', :expr, ')') {|_, a, _| a }
-        match(:literal)
+        match(Integer) { | a | Int.new(a) }
       end
 
       rule :ID do
-        match(/[a-z_]\w*/)
+        match($id_regex)
       end
 
       rule :builtins_type do
@@ -187,10 +202,8 @@ class CSMMParser
       end
 
       rule :literal do
-        match("true") {| a | Bool.new(true) }
-        match("false") {| a | Bool.new(false) }
-        match(Integer) { | a | Int.new(a) }
         match(/\'.\'/) { | a | Char.new(a) }
+        match(:ID) { | a | VariableLookup.new(a) }
       end
 
     end

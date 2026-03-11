@@ -1,12 +1,13 @@
 class Program {
-    private int tmp;
-    public int tmp2;
-    protected int tmp3;
-    int tmp4;
+#    private int tmp;
+#    public int tmp2;
+#    protected int tmp3;
+#    int tmp4;
 
     public int main() {
-        int a = 2;
-        int b = 3;
-        return a + b;
+        int a = 2 + 2;
+        a = 4 + 4;
+#        int b = 5 + a;
+        return a + 2;
     }
 }

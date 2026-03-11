@@ -227,7 +227,7 @@ class Rule
         else
           match_result = result[0]
         end
-        @logger.debug("#{"[Rule:try_matches]".ljust(18)} '#{@parser.tokens[start..@parser.pos-1][0]}' matched '#{@name}' and generated '#{match_result.inspect}'") unless match_result.nil?
+        @logger.debug("#{"[Rule:try_matches]".ljust(18)} '#{@parser.tokens[start..@parser.pos-1]}' matched '#{@name}' and generated '#{match_result.inspect}'") unless match_result.nil?
         # @logger.debug("#{"[Rule:try_matches]".ljust(18)} '#{@parser.string[start..@parser.pos-1]}' matched '#{@name}' and generated '#{match_result.inspect}'") unless match_result.nil?
         break
       else
