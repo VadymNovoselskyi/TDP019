@@ -1,12 +1,6 @@
-class Test123 {
-    char a;
-}
-
 class Program {
-    int tmp;
-    int tmp2;
-
-#    void help() {
-#        Test123 abc = new Test123()
-#    }
+    int main() {
+        int a = 2;
+        return a;
+    }
 }

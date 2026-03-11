@@ -64,6 +64,7 @@ class CSMMParser
 
       rule :member_decl do 
         match(:field_decl)
+        match(:method_decl)
       end
 
       rule :field_decl do
@@ -71,23 +72,10 @@ class CSMMParser
           Variable.new(type_class, name)
         end 
       end
-
-      rule :method_decls do
-        match(:method_decl, :method_decls) {| method, methods | 
-          if (methods == :empty)
-            methods= []
-          end
-
-          methods.append(method)
-          methods
-        }
-        match(:empty)
-      end
       
       rule :method_decl do 
         match(:builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { | type, id , _, params, _,  _, stmt_list, _ |
-          puts "#{type} #{id} is #{stmt_list[0]}"
-          stmt_list[0]
+          Function.new(type, id, params, stmt_list)
         }
       end
 
@@ -119,6 +107,8 @@ class CSMMParser
 
       rule :stmt do 
         match(:assignment)
+        match("return", :expr, ";") { | _, expr, _ | expr }
+        match("return", :ID, ";") { | _, id, _ | id }
       end
 
       rule :assignment do
