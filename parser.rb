@@ -81,7 +81,7 @@ class CSMMParser
       rule :method_decl do 
         match(:access_modifier, :builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
           | access, type, id , _, params, _,  _, stmt_list, _ |
-          Function.new(access, type, id, params, stmt_list)
+          Function.new(access, type, id, params, stmt_list.reverse())
         }
       end
 
@@ -120,8 +120,8 @@ class CSMMParser
 
       rule :stmt do 
         match(:assignment)
-        match("return", :expr, ";") { | _, expr, _ | expr }
-        match("return", :ID, ";") { | _, id, _ | id }
+        match("return", :expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
+        match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
       end
 
       rule :assignment do
