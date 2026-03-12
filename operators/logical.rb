@@ -3,7 +3,7 @@ require "./types/primitives.rb"
 
 class ComparisonNode < BaseNode
   def initialize(lhs, op, rhs)
-    if (lhs.eval_type() != rhs.eval_type())
+    if (lhs.eval_type() != rhs.eval_type()) && lhs.is_a?(VariableLookup) && rhs.is_a?(VariableLookup)
       raise "Invalid input to ComparisonNode. Expected #{lhs.eval_type()} == #{rhs.eval_type()}"
     end
     
@@ -17,8 +17,8 @@ class ComparisonNode < BaseNode
     return Bool
   end
 
-  def evaluate()
-    return @lhs.evaluate().send(@op, @rhs.evaluate())
+  def evaluate(scope)
+    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
   end
 end
 
@@ -37,8 +37,8 @@ class LogicNode < BaseNode
     return Bool
   end
     
-  def evaluate()
-    return @lhs.evaluate().send(@op, @rhs.evaluate())
+  def evaluate(scope)
+    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
   end
 end
 
@@ -54,7 +54,7 @@ class NotNode < BaseNode
     return Bool
   end
 
-  def evaluate()
-    return !@value.evaluate()
+  def evaluate(scope)
+    return !@value.evaluate(scope)
   end
 end

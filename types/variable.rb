@@ -24,12 +24,12 @@ class Variable < BaseNode
     return @type_class
   end
     
-  def evaluate()
+  def evaluate(scope)
     if (@value == nil) 
       return nil
       # raise "Use of unassigned variable #{@name}"
     end
-    return @value.evaluate
+    return @value.evaluate(scope)
   end
    
 end
@@ -42,11 +42,11 @@ class VariableLookup < BaseNode
   end
 
   def eval_type()
-    return NilClass
+    return self.class
   end
 
-  def evaluate()
-    return @name
+  def evaluate(scope)
+    return scope.get(@name)
   end
 end
 
@@ -61,7 +61,7 @@ class Reassign < BaseNode
     return @new_value.eval_type()
   end
 
-  def evaluate()
-    return @new_value.evaluate()
+  def evaluate(scope)
+    return @new_value.evaluate(scope)
   end
 end

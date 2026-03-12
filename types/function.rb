@@ -45,9 +45,9 @@ class Function < BaseNode
       end
       
       if node.is_a?(ReturnNode)
-        return node.evaluate() if node.eval_type() <= BaseNode
+        return node.evaluate(scope) if node.eval_type() <= BaseNode
 
-        return scope.get(node.evaluate().name).evaluate()
+        return scope.get(node.evaluate(scope).name).evaluate(scope)
       end
       puts "\n\n\n"
     }
@@ -102,7 +102,7 @@ class ReturnNode < BaseNode
     return @value.eval_type()
   end
 
-  def evaluate()
+  def evaluate(_scope)
     # return @value.evaluate() if @value.is_a?(BaseNode)
     return @value
   end

@@ -9,7 +9,7 @@ class Int < BaseNode
     return self.class
   end
     
-  def evaluate()
+  def evaluate(_scope)
     return @number
   end
    
@@ -24,7 +24,7 @@ class Bool < BaseNode
     return self.class
   end
     
-  def evaluate()
+  def evaluate(_scope)
     return @val
   end
 end
@@ -38,7 +38,7 @@ class Char < BaseNode
     return self.class
   end
     
-  def evaluate()
+  def evaluate(_scope)
     return @val
   end
 
@@ -55,7 +55,7 @@ class Void < BaseNode
     return self.class
   end
     
-  def evaluate()
+  def evaluate(_scope)
     return
   end
 end

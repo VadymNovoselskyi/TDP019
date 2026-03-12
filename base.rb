@@ -4,6 +4,6 @@ class BaseNode
   end
 
   def to_s()
-    return evaluate().to_s()
+    return self.class
   end
 end
