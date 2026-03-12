@@ -133,6 +133,9 @@ class CSMMParser
       end
 
       rule :assignment do
+        match(:builtins_type, :ID, ";") { |type_class, name, _| 
+          Variable.new(type_class, name)
+        }
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
           Variable.new(type_class, name, value)
         end
