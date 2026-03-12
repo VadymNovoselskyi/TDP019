@@ -17,8 +17,8 @@ class ComparisonNode < BaseNode
     return Bool
   end
 
-  def evaluate(scope)
-    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
+  def evaluate()
+    return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
 end
 
@@ -37,8 +37,8 @@ class LogicNode < BaseNode
     return Bool
   end
     
-  def evaluate(scope)
-    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
+  def evaluate()
+    return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
 end
 
@@ -54,7 +54,7 @@ class NotNode < BaseNode
     return Bool
   end
 
-  def evaluate(scope)
-    return !@value.evaluate(scope)
+  def evaluate()
+    return !@value.evaluate()
   end
 end

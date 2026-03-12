@@ -171,6 +171,7 @@ class CSMMParser
         
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
+        match(:ID) {| a | VariableLookup.new(a) }
       end      
       
       # Arithmetic
@@ -194,6 +195,7 @@ class CSMMParser
       rule :factor do
         match('(', :expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
+        match(:ID) {| a | VariableLookup.new(a) }
       end
 
       rule :ID do

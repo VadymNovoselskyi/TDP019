@@ -5,9 +5,9 @@ class Program {
 #    int tmp4;
 
     public int main() {
-        bool a = true;
-        a = false;
-#        int b = 5 + a;
-        return a == false;
+        int a = 2 + 2;
+        a = 4 + 4;
+        int b = 5 + a;
+        return b - a;
     }
 }

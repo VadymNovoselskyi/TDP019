@@ -16,7 +16,7 @@ class ArithNode < BaseNode
     return Int
   end
 
-  def evaluate(scope)
-    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
+  def evaluate()
+    return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
 end

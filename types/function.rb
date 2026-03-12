@@ -31,6 +31,7 @@ class Function < BaseNode
     
     executables.each { | node |
       # puts "node: #{node.class}"
+      puts "\n\n\n"
       
       
       if node.is_a?(Variable) 
@@ -52,7 +53,6 @@ class Function < BaseNode
 
         return scope.get(node.evaluate().name).evaluate()
       end
-      # puts "\n\n\n"
     }
   end
 
@@ -67,19 +67,18 @@ class Function < BaseNode
       return node
     end
 
-    replace_viriable_lookup(node.instance_variable_get(:@lhs), scope)
-    replace_viriable_lookup(node.instance_variable_get(:@rhs), scope)
-    replace_viriable_lookup(node.instance_variable_get(:@value), scope)
+    if (node.instance_variables.include?(:@lhs))
+      node.instance_variable_set(:@lhs, replace_viriable_lookup(node.instance_variable_get(:@lhs), scope))
+    end
+    if (node.instance_variables.include?(:@rhs))
+      node.instance_variable_set(:@rhs, replace_viriable_lookup(node.instance_variable_get(:@rhs), scope))
+    end
+    if (node.instance_variables.include?(:@value))
+      node.instance_variable_set(:@value, replace_viriable_lookup(node.instance_variable_get(:@value), scope))
+    end
+
+    return node
   end
-
-  # DFSPreOrder(node: Node<T> | null = this.root, result: T[] = []): T[] {
-  #   if (!node) return result;
-
-  #   result.push(node.value);
-  #   this.DFSPreOrder(node.left, result);
-  #   this.DFSPreOrder(node.right, result);
-  #   return result;
-  # }
 end
 
 class FunctionScope 
