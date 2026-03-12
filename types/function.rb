@@ -28,30 +28,58 @@ class Function < BaseNode
   
   def evaluate(callee, args = [])
     scope = FunctionScope.new(callee, args, @name)
-
+    
     executables.each { | node |
-      puts "node: #{node.class}"
+      # puts "node: #{node.class}"
       
-
+      
       if node.is_a?(Variable) 
-        puts "node.name: #{node.name}"
+        # puts "node.name: #{node.name}"
         scope.set(node.name, node)
         next
       end
-
+      
       if node.is_a?(Reassign)
         scope.set(node.name, node)
-        next
+          next
       end
       
       if node.is_a?(ReturnNode)
-        return node.evaluate(scope) if node.eval_type() <= BaseNode
+        # puts "node: #{node}; node.class: #{node.class} node.value: #{node.value}"
+        replace_viriable_lookup(node, scope)
+        puts scope.instance_variable_get(:@scope)
+        return node.evaluate() if node.eval_type() <= BaseNode
 
-        return scope.get(node.evaluate(scope).name).evaluate(scope)
+        return scope.get(node.evaluate().name).evaluate()
       end
-      puts "\n\n\n"
+      # puts "\n\n\n"
     }
   end
+
+  def replace_viriable_lookup(node, scope)
+    return node if node == nil
+
+    if node.is_a?(VariableLookup)
+      puts "node: #{node}; node.class: #{node.class} node.name: #{node.name}"
+      puts "scope.get(node.name): #{scope.get(node.name)}"
+      node = scope.get(node.name)
+      puts "node: #{node}; node.class: #{node.class} node.name: #{node.name}"
+      return node
+    end
+
+    replace_viriable_lookup(node.instance_variable_get(:@lhs), scope)
+    replace_viriable_lookup(node.instance_variable_get(:@rhs), scope)
+    replace_viriable_lookup(node.instance_variable_get(:@value), scope)
+  end
+
+  # DFSPreOrder(node: Node<T> | null = this.root, result: T[] = []): T[] {
+  #   if (!node) return result;
+
+  #   result.push(node.value);
+  #   this.DFSPreOrder(node.left, result);
+  #   this.DFSPreOrder(node.right, result);
+  #   return result;
+  # }
 end
 
 class FunctionScope 
@@ -69,9 +97,6 @@ class FunctionScope
   end
   
   def get(key)
-    puts "Getting key: #{key}"
-    puts "scope: #{@scope}"
-
     if @scope.has_key?(key)
       return @scope[key]
     elsif @callee.get_attribute(key, "inside")
@@ -93,6 +118,8 @@ class FunctionScope
 end
 
 class ReturnNode < BaseNode
+  attr_accessor :value
+  
   def initialize(value)
     @value = value
   end
@@ -101,7 +128,8 @@ class ReturnNode < BaseNode
     return @value.eval_type()
   end
 
-  def evaluate(_scope)
-    return @value.evaluate(_scope)
+  def evaluate()
+    # return @value.evaluate() if @value.is_a?(BaseNode)
+    return @value.evaluate()
   end
 end
