@@ -86,9 +86,9 @@ class FunctionScope
 
   def set(key, value)
     if @scope.has_key?(key)
-      @scope[key].reassign(value)
+      @scope[key].reassign(value, self)
     elsif @callee.get_attribute(key, "inside")
-      @callee.get_attribute(key, "inside").reassign(value)
+      @callee.get_attribute(key, "inside").reassign(value, self)
     else
       @scope[key] = value
     end
@@ -100,8 +100,8 @@ class ReturnNode < BaseNode
     @value = value
   end
 
-  def eval_type()
-    return @value.eval_type()
+  def eval_type(scope)
+    return @value.eval_type(scope)
   end
 
   def evaluate(_scope)

@@ -7,10 +7,11 @@ class Program {
     public int main() {
         int a;
         a = 4 + 4;
-#        int b = 5 + a;
-        return a;
-        int a = 0;
-        a = 4 + 4;
-        return a == 8;
+        int b = a;
+        a = 12;
+        b = 10;
+        bool c = false;
+        a = c;
+        return b;
     }
 }

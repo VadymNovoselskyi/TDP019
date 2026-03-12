@@ -5,7 +5,7 @@ class Int < BaseNode
     @number = number
   end
 
-  def eval_type()
+  def eval_type(_scope)
     return self.class
   end
     
@@ -20,7 +20,7 @@ class Bool < BaseNode
     @val = val
   end
 
-  def eval_type()
+  def eval_type(_scope)
     return self.class
   end
     
@@ -34,7 +34,7 @@ class Char < BaseNode
     @val = val.codepoints[1]
   end
 
-  def eval_type()
+  def eval_type(_scope)
     return self.class
   end
     
@@ -51,7 +51,7 @@ class Void < BaseNode
   def initialize()
   end
 
-  def eval_type()
+  def eval_type(_scope)
     return self.class
   end
     
