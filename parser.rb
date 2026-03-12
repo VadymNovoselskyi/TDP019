@@ -197,6 +197,9 @@ class CSMMParser
         match('(', :expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
         match("-", Integer) { | _, a | Int.new(-a) }
+        
+        # Mabye combine? Fix later
+        match(:ID) { | a | VariableLookup.new(a) }
       end
 
       rule :ID do
