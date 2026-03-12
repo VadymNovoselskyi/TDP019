@@ -3,32 +3,33 @@ require "./base.rb"
 class Variable < BaseNode
   attr_accessor :type_class, :name, :value 
   def initialize(type_class, name, value = nil)
-    if (value != nil && type_class != value.eval_type())
-      raise "Trying to assign #{value.eval_type()} to a variablel of type #{type_class}"
-    end
-
+    
     @type_class = type_class
     @name = name
     @value = value
-
+    
   end
-
+  
   def reassign(new_value)
     if (new_value.eval_type() != @type_class)
       raise "Trying to assign #{new_value.eval_type()} to a variablel of type #{@type_class}"
     end
     @value = new_value
   end
-
+  
   def eval_type()
     return @type_class
   end
-    
+  
   def evaluate()
     if (@value == nil) 
       return nil
       # raise "Use of unassigned variable #{@name}"
     end
+
+    # if (@type_class != @value.eval_type())
+    #   raise "Trying to assign #{@value.eval_type()} to a variablel of type #{@type_class}"
+    # end
     return @value.evaluate()
   end
    
@@ -42,13 +43,15 @@ class VariableLookup < BaseNode
   end
 
   def eval_type()
-    return self.class
+    puts "VariableLookup eval_type: #{@name}"
+    # return scope.get(@name).eval_type(scope)
+    return @name
   end
 
   def evaluate()
-    puts "VariableLookup: #{@name}"
+    puts "VariableLookup evaluate: #{@name}"
+    # return scope.get(@name).evaluate(scope)
     return @name
-    # return scope.get(@name)
   end
 end
 

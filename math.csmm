@@ -7,7 +7,7 @@ class Program {
     public int main() {
         int a = 2 + 2;
         a = 4 + 4;
-        int b = 5 + a;
-        return b - a;
+#        int b = a;
+        return a + 2;
     }
 }

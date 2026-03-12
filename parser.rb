@@ -101,13 +101,17 @@ class CSMMParser
       end
 
       rule :opt_param_list do
-        match(:param, :param_list_tail)
-        match(:empty)
+        match(:param, :param_list_tail) { | param, tail |
+          tail.append(param)
+        }
+        match(:empty) { [] }
       end
 
       rule :param_list_tail do
-        match(",", :param, :param_list_tail)
-        match(:empty)
+        match(",", :param, :param_list_tail) { | _, param, tail |
+          tail.append(param)
+        }
+        match(:empty) { [] }
       end
 
       rule :param do
@@ -117,14 +121,9 @@ class CSMMParser
 
       rule :stmt_list do 
         match(:stmt, :stmt_list) { | stmt, stmt_list | 
-          if (stmt_list == :empty)
-            stmt_list = []
-          end
-
           stmt_list.append(stmt)
-          stmt_list
         }
-        match(:empty)
+        match(:empty) { [] }
       end
 
       rule :stmt do 
@@ -134,6 +133,9 @@ class CSMMParser
       end
 
       rule :assignment do
+        match(:builtins_type, :ID, ";") { |type_class, name, _| 
+          Variable.new(type_class, name)
+        }
         match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
           Variable.new(type_class, name, value)
         end
@@ -168,10 +170,12 @@ class CSMMParser
         match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
         
         match("(", :logical_expr, ")") {|_, a, _| a }
+        match("!", :logical_expr) {|_, a| NotNode.new(a) }
         
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
-        match(:ID) {| a | VariableLookup.new(a) }
+        # Combine with literal? Fix later
+        match(:ID) { | a | VariableLookup.new(a) }
       end      
       
       # Arithmetic
@@ -195,7 +199,10 @@ class CSMMParser
       rule :factor do
         match('(', :expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
-        match(:ID) {| a | VariableLookup.new(a) }
+        match("-", Integer) { | _, a | Int.new(-a) }
+
+        # Mabye combine? Fix later
+        match(:ID) { | a | VariableLookup.new(a) }
       end
 
       rule :ID do
