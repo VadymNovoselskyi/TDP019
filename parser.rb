@@ -101,13 +101,17 @@ class CSMMParser
       end
 
       rule :opt_param_list do
-        match(:param, :param_list_tail)
-        match(:empty)
+        match(:param, :param_list_tail) { | param, tail |
+          tail.append(param)
+        }
+        match(:empty) { [] }
       end
 
       rule :param_list_tail do
-        match(",", :param, :param_list_tail)
-        match(:empty)
+        match(",", :param, :param_list_tail) { | _, param, tail |
+          tail.append(param)
+        }
+        match(:empty) { [] }
       end
 
       rule :param do
@@ -117,14 +121,9 @@ class CSMMParser
 
       rule :stmt_list do 
         match(:stmt, :stmt_list) { | stmt, stmt_list | 
-          if (stmt_list == :empty)
-            stmt_list = []
-          end
-
           stmt_list.append(stmt)
-          stmt_list
         }
-        match(:empty)
+        match(:empty) { [] }
       end
 
       rule :stmt do 

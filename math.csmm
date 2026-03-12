@@ -7,7 +7,7 @@ class Program {
     public int main() {
         bool a = true;
         a = false;
-#        int b = 5 + a;
-        return a == false;
+        a = 2 == 2;
+        return a;
     }
 }
