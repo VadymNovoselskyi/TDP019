@@ -1,13 +1,14 @@
 class Program {
-#    private int tmp;
+    private int tmp;
 #    public int tmp2;
 #    protected int tmp3;
 #    int tmp4;
 
     public int main() {
+        tmp = 50;
         int a = 2 + 2;
         a = 4 + 4;
-#        int b = a;
-        return a + 2;
+        int b = 2 + a + tmp;
+        return b;
     }
 }

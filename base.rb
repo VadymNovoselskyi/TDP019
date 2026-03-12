@@ -4,6 +4,7 @@ class BaseNode
   end
 
   def to_s()
-    return evaluate().inspect()
+    return self.inspect()
+    # return evaluate().inspect()
   end
 end

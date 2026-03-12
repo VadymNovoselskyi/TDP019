@@ -49,7 +49,9 @@ class Function < BaseNode
       end
       
       if node.is_a?(ReturnNode)
+        # puts "ReturnNode: #{node.inspect}"
         root = replace_viriable_lookup(node, scope)
+        # puts "root: #{root.inspect}"
         eval_res = root.evaluate()
         if (eval_res.class <= BaseNode)
           return scope.get(eval_res.name).evaluate()
@@ -61,27 +63,35 @@ class Function < BaseNode
 
   def replace_viriable_lookup(node, scope)
     return node if node == nil
-    puts "--------------------------------"
+    # puts "--------------------------------"
 
     if node.is_a?(VariableLookup)
-      puts "Before: node.class: #{node.class} node.name: #{node.name}"
-      puts "scope.get(node.name): #{scope.get(node.name)}"
-      node = scope.get(node.name)
-      puts "After: node.class: #{node.class} node.name: #{node.name}; node.value: #{node.value}"
-      return node
+      # puts "Before: node: #{node}"
+      # puts "scope.get(node.name): #{scope.get(node.name)}"
+      scoped_node = scope.get(node.name)
+      # puts "After scope: node: #{node}"
+      replaced_node = replace_viriable_lookup(scoped_node, scope)
+      # puts "After replace_viriable_lookup: node: #{node}"
+      return replaced_node
     end
 
     if (node.instance_variables.include?(:@lhs))
-      puts "For node: #{node.class} Looking up lhs: #{node.instance_variable_get(:@lhs)}"
-      node.instance_variable_set(:@lhs, replace_viriable_lookup(node.instance_variable_get(:@lhs), scope))
+      # puts "For node: \n#{node} \nLooking up lhs: #{node.instance_variable_get(:@lhs)}"
+      old_lhs = node.instance_variable_get(:@lhs)
+      replaced_node = replace_viriable_lookup(old_lhs, scope)
+      node.instance_variable_set(:@lhs, replaced_node)
     end
     if (node.instance_variables.include?(:@rhs))
-      puts "For node: #{node.class} Looking up rhs: #{node.instance_variable_get(:@rhs)}"
-      node.instance_variable_set(:@rhs, replace_viriable_lookup(node.instance_variable_get(:@rhs), scope))
+      # puts "For node: \n#{node} \nLooking up rhs: #{node.instance_variable_get(:@rhs)}"
+      old_rhs = node.instance_variable_get(:@rhs)
+      replaced_node = replace_viriable_lookup(old_rhs, scope)
+      node.instance_variable_set(:@rhs, replaced_node)
     end
     if (node.instance_variables.include?(:@value))
-      puts "For node: #{node.class} Looking up value: #{node.instance_variable_get(:@value)}"
-      node.instance_variable_set(:@value, replace_viriable_lookup(node.instance_variable_get(:@value), scope))
+      # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@value)}"
+      old_value = node.instance_variable_get(:@value)
+      replaced_node = replace_viriable_lookup(old_value, scope)
+      node.instance_variable_set(:@value, replaced_node)
     end
 
     return node
@@ -105,10 +115,8 @@ class FunctionScope
   # Gets the class instance. (Doesn't evaluate it)
   def get(key)
     if @scope.has_key?(key)
-      puts "FunctionScope get: #{@scope[key]}"
       return @scope[key]
     elsif @callee.get_attribute(key, "inside")
-      puts "FunctionScope get: #{@callee.get_attribute(key, "inside")}"
       return @callee.get_attribute(key, "inside")
     end
 
