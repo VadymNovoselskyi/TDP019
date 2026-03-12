@@ -46,7 +46,7 @@ class VariableLookup < BaseNode
   end
 
   def evaluate(scope)
-    return scope.get(@name)
+    return scope.get(@name).evaluate(scope)
   end
 end
 
