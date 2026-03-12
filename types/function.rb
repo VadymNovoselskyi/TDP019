@@ -20,45 +20,76 @@ class Function < BaseNode
     @args = args
     @executables = executables
 
-    @scope = {}
   end
   
   def eval_type()
     return self.class()
   end
-    
-  def evaluate(args = [])
+  
+  def evaluate(callee, args = [])
+    scope = FunctionScope.new(callee, args, @name)
+
     executables.each { | node |
       puts "node: #{node.class}"
       
 
       if node.is_a?(Variable) 
         puts "node.name: #{node.name}"
-        @scope[node.name] = node
-        puts @scope
+        scope.set(node.name, node)
         next
       end
 
       if node.is_a?(Reassign)
-        if !@scope.has_key?(node.name)
-          raise "Function '#{@name}' has no variable named '#{node.name}' in the current context;"
-        end
-        @scope[node.name].reassign(node)
+        scope.set(node.name, node)
         next
       end
       
       if node.is_a?(ReturnNode)
         return node.evaluate() if node.eval_type() <= BaseNode
 
-        result = node.evaluate() 
-        if !@scope.has_key?(result)
-          raise "Function '#{@name}' has no variable named '#{result}' in the current context;"
-        end
-
-        return @scope[result].evaluate()
+        return scope.get(node.evaluate().name).evaluate()
       end
       puts "\n\n\n"
     }
+  end
+end
+
+class FunctionScope 
+  def initialize(callee, args, name)
+    puts "callee: #{callee}"
+    puts "args: #{args}"
+    puts "name: #{name}"
+
+    @callee = callee
+    @scope = {}
+    @name = name
+    for arg in args
+      @scope[arg.name] = arg
+    end
+  end
+  
+  def get(key)
+    puts "Getting key: #{key}"
+    puts "scope: #{@scope}"
+
+    if @scope.has_key?(key)
+      return @scope[key]
+    elsif @callee.get_attribute(key, "inside")
+      return @callee.get_attribute(key, "inside")
+    end
+
+    raise "Function '#{@name}' has no variable named '#{key}' in the current context;"
+  end
+
+  def set(key, value)
+    if @scope.has_key?(key)
+      @scope[key].reassign(value)
+    elsif @callee.get_attribute(key, "inside")
+      @callee.get_attribute(key, "inside").reassign(value)
+    
+    end
+    
+    @scope[key] = value
   end
 end
 
@@ -72,7 +103,7 @@ class ReturnNode < BaseNode
   end
 
   def evaluate()
-    return @value.evaluate() if @value.is_a?(BaseNode)
+    # return @value.evaluate() if @value.is_a?(BaseNode)
     return @value
   end
 end

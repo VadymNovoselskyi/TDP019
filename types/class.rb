@@ -95,26 +95,27 @@ class ClassInstanceType
    end
 
    if (@super != nil)
-     return @super.get_attribute(name, "subclass")
+     return @super.get_attribute(name, callee == "outside" ? "outside" : "subclass")
    end
 
-   raise "Class #{@class_name} doesn't have a variable named: #{name}"
+   return nil
+  #  raise "Class #{@class_name} doesn't have a variable named: #{name}"
    
  end
 
  def run_function(name, args, callee = "outside")
    if (@function_scope[:public][name] != nil)
-     return @function_scope[:public][name].evaluate(args)
+     return @function_scope[:public][name].evaluate(self, args)
    end
    if (callee == "inside" || callee == "subclass")
      if (@function_scope[:private][name] != nil)
-       return @function_scope[:private][name].evaluate(args)
+       return @function_scope[:private][name].evaluate(self, args)
      end
    end
 
    if (callee == "subclass")
      if (@function_scope[:protected][name] != nil)
-       return @function_scope[:protected][name].evaluate(args)
+       return @function_scope[:protected][name].evaluate(self, args)
      end
    end
 

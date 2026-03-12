@@ -176,7 +176,7 @@ class CSMMParser
       # Arithmetic
       rule :arith_expr do 
         match(:arith_expr, '+', :term) {|a, _, b| ArithNode.new(a, :+, b) }
-        match(:ariths_expr, '-', :term) {|a, _, b| ArithNode.new(a, :-, b) }
+        match(:arith_expr, '-', :term) {|a, _, b| ArithNode.new(a, :-, b) }
         match(:term)
       end
       
