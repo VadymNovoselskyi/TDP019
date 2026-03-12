@@ -196,6 +196,7 @@ class CSMMParser
       rule :factor do
         match('(', :expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
+        match("-", Integer) { | _, a | Int.new(-a) }
       end
 
       rule :ID do
