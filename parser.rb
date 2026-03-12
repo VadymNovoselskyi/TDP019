@@ -170,9 +170,12 @@ class CSMMParser
         match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
         
         match("(", :logical_expr, ")") {|_, a, _| a }
+        match("!", :logical_expr) {|_, a| NotNode.new(a) }
         
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
+        # Combine with literal? Fix later
+        match(:ID) { | a | VariableLookup.new(a) }
       end      
       
       # Arithmetic
@@ -197,7 +200,7 @@ class CSMMParser
         match('(', :expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
         match("-", Integer) { | _, a | Int.new(-a) }
-        
+
         # Mabye combine? Fix later
         match(:ID) { | a | VariableLookup.new(a) }
       end
