@@ -73,6 +73,7 @@ class FunctionScope
     end
   end
   
+  # Gets the class instance. (Doesn't evaluate it)
   def get(key)
     if @scope.has_key?(key)
       return @scope[key]

@@ -5,9 +5,8 @@ class Program {
 #    int tmp4;
 
     public int main() {
-        bool a = true;
-        a = false;
-        a = 2 == 2;
-        return a;
+        int a = 0;
+        a = 4 + 4;
+        return a == 8;
     }
 }
