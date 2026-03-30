@@ -10,16 +10,16 @@ class ComparisonNode < BaseNode
     
   end
   
-  def eval_type(_scope)
+  def eval_type()
     return Bool
   end
   
-  def evaluate(scope)
-    if @lhs.eval_type(scope) != @rhs.eval_type(scope)
-      raise "Invalid input to ComparisonNode. Expected #{@lhs.eval_type(scope)} == #{@rhs.eval_type(scope)}"
+  def evaluate()
+    if @lhs.eval_type() != @rhs.eval_type()
+      raise "Invalid input to ComparisonNode. Expected #{@lhs.eval_type()} == #{@rhs.eval_type()}"
     end
 
-    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
+    return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
 end
 
@@ -31,15 +31,15 @@ class LogicNode < BaseNode
     @rhs = rhs
   end
   
-  def eval_type(_scope)
+  def eval_type()
     return Bool
   end
   
-  def evaluate(scope)
-    if (@lhs.eval_type(scope) != Bool || @rhs.eval_type(scope) != Bool)
-      raise "Invalid input to LogicNode. Expected Bool Bool, received: #{@lhs.eval_type(scope)} #{@rhs.eval_type(scope)}"
+  def evaluate()
+    if (@lhs.eval_type() != Bool || @rhs.eval_type() != Bool)
+      raise "Invalid input to LogicNode. Expected Bool Bool, received: #{@lhs.eval_type()} #{@rhs.eval_type()}"
     end
-    return @lhs.evaluate(scope).send(@op, @rhs.evaluate(scope))
+    return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
 end
 
@@ -48,14 +48,14 @@ class NotNode < BaseNode
     @value = value
   end
   
-  def eval_type(_scope)
+  def eval_type()
     return Bool
   end
   
-  def evaluate(scope)
-    if (@value.eval_type(scope) != Bool) 
-      raise "Invalid input to NotNode. Expected Bool, received: #{@value.eval_type(scope)}"
+  def evaluate()
+    if (@value.eval_type() != Bool) 
+      raise "Invalid input to NotNode. Expected Bool, received: #{@value.eval_type()}"
     end
-    return !@value.evaluate(scope)
+    return !@value.evaluate()
   end
 end

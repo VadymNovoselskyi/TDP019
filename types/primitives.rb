@@ -5,11 +5,11 @@ class Int < BaseNode
     @number = number
   end
 
-  def eval_type(_scope)
+  def eval_type()
     return self.class
   end
     
-  def evaluate(_scope)
+  def evaluate()
     return @number
   end
    
@@ -20,11 +20,11 @@ class Bool < BaseNode
     @val = val
   end
 
-  def eval_type(_scope)
+  def eval_type()
     return self.class
   end
     
-  def evaluate(_scope)
+  def evaluate()
     return @val
   end
 end
@@ -34,11 +34,11 @@ class Char < BaseNode
     @val = val.codepoints[1]
   end
 
-  def eval_type(_scope)
+  def eval_type()
     return self.class
   end
     
-  def evaluate(_scope)
+  def evaluate()
     return @val
   end
 
@@ -51,11 +51,11 @@ class Void < BaseNode
   def initialize()
   end
 
-  def eval_type(_scope)
+  def eval_type()
     return self.class
   end
     
-  def evaluate(_scope)
+  def evaluate()
     return
   end
 end
