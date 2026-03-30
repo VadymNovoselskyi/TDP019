@@ -1,11 +1,12 @@
 class Program {
-    private int tmp;
+   # private int tmp;
 
     public int main() {
-        tmp = 50;
-        int a = 2 + 2;
-        a = 4 + 4;
-        int b = 2 + a + tmp;
-        return b + 2;
+        int tmp = 50;
+        int tmp2 = 20;
+        int tmp3 = 2;
+        int tmp5 = -5;
+        int tmp4 = 10 + tmp5;
+        return tmp / tmp4 + tmp2 * tmp3;
     }
 }

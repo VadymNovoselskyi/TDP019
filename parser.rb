@@ -128,7 +128,7 @@ class CSMMParser
 
       rule :stmt do 
         match(:assignment)
-        match("return", :expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
+        match("return", :logical_expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
         match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
       end
 
@@ -136,20 +136,29 @@ class CSMMParser
         match(:builtins_type, :ID, ";") { |type_class, name, _| 
           Variable.new(type_class, name)
         }
-        match(:builtins_type, :ID, "=", :expr, ";") do |type_class, name, _, value, _|  
+        match(:builtins_type, :ID, "=", :logical_expr, ";") do |type_class, name, _, value, _|  
           Variable.new(type_class, name, value)
         end
-        match(:ID, "=", :expr, ";") do |name, _, value, _| 
+        match(:ID, "=", :logical_expr, ";") do |name, _, value, _| 
           Reassign.new(name, value)
         end
       end
 
-      rule :expr do
-        match(:expr, :expr_op, :expr) do | lhs, op, rhs |
+      # Boolean Logic
+      rule :logical_expr do
+        match(:logical_expr, "&&", :comp_expr) {|a, _, b| LogicNode.new(a, :&, b) }
+        match(:logical_expr, "||", :comp_expr) {|a, _, b| LogicNode.new(a, :|, b) }
+        match(:logical_expr, "^", :comp_expr) {|a, _, b| LogicNode.new(a, "^", b) }
+        match("!", :logical_expr) {|_, a| NotNode.new(a) }
+        match(:comp_expr)
+
+      end
+
+      rule :comp_expr do
+        match(:comp_expr, :expr_op, :logical_expr) do | lhs, op, rhs |
           ComparisonNode.new(lhs, op, rhs)
         end
 
-        match(:logical_expr)
         match(:arith_expr)
         match(:literal)
       end
@@ -162,21 +171,6 @@ class CSMMParser
         match(">=") { :>= }
         match("<=") { :<= }
       end
-
-      # Boolean Logic
-      rule :logical_expr do
-        match(:logical_expr, "&&", :logical_expr) {|a, _, b| LogicNode.new(a, :&, b) }
-        match(:logical_expr, "||", :logical_expr) {|a, _, b| LogicNode.new(a, :|, b) }
-        match(:logical_expr, "^", :logical_expr) {|a, _, b| LogicNode.new(a, "^", b) }
-        
-        match("(", :logical_expr, ")") {|_, a, _| a }
-        match("!", :logical_expr) {|_, a| NotNode.new(a) }
-        
-        match("true") {| a | Bool.new(true) }
-        match("false") {| a | Bool.new(false) }
-        # Combine with literal? Fix later
-        match(:ID) { | a | VariableLookup.new(a) }
-      end      
       
       # Arithmetic
       rule :arith_expr do 
@@ -197,12 +191,11 @@ class CSMMParser
       end
 
       rule :factor do
-        match('(', :expr, ')') {|_, a, _| a }
+        match('(', :logical_expr, ')') {|_, a, _| a }
         match(Integer) { | a | Int.new(a) }
         match("-", Integer) { | _, a | Int.new(-a) }
 
-        # Mabye combine? Fix later
-        match(:ID) { | a | VariableLookup.new(a) }
+        match(:literal)
       end
 
       rule :ID do
@@ -219,6 +212,8 @@ class CSMMParser
       rule :literal do
         match(/\'.\'/) { | a | Char.new(a) }
         match(:ID) { | a | VariableLookup.new(a) }
+        match("true") {| a | Bool.new(true) }
+        match("false") {| a | Bool.new(false) }
       end
 
     end

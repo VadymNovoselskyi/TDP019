@@ -1,7 +1,6 @@
 class Program {
     public int main() {
-        bool a = true;
-        bool b = false;
-        return a && b;
+       int a = 20;
+       return !((a != 10 + 10) == !false);
     }
 }
