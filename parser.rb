@@ -128,6 +128,7 @@ class CSMMParser
 
       rule :stmt do 
         match(:assignment)
+        match(:function_call, ";")
         match("return", :logical_expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
         match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
       end

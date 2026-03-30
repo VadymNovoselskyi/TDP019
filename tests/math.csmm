@@ -8,7 +8,7 @@ class Program {
         int tmp5 = -5;
         int tmp4 = 10 + tmp5;
         int test = add(5, 10);
-    # add(10, 20);
+        add(10, 20);
         return test;
     }
 
