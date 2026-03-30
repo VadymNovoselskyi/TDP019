@@ -23,13 +23,9 @@ class Variable < BaseNode
   
   def evaluate()
     if (@value == nil) 
-      return nil
-      # raise "Use of unassigned variable #{@name}"
+      raise "Use of unassigned variable #{@name}"
     end
 
-    # if (@type_class != @value.eval_type())
-    #   raise "Trying to assign #{@value.eval_type()} to a variablel of type #{@type_class}"
-    # end
     return @value.evaluate()
   end
    
@@ -43,15 +39,11 @@ class VariableLookup < BaseNode
   end
 
   def eval_type()
-    puts "VariableLookup eval_type: #{@name}"
-    # return scope.get(@name).eval_type(scope)
-    return @name
+    raise "Tried to evaluate the type of a VariableLookup node"
   end
 
   def evaluate()
-    puts "VariableLookup evaluate: #{@name}"
-    # return scope.get(@name).evaluate(scope)
-    return @name
+    raise "Tried to evaluate a VariableLookup node"
   end
 end
 
