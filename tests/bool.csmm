@@ -1,5 +1,5 @@
 class Program {
-    public int main() {
+    public bool main() {
        int a = 20;
        return !((a != 10 + 10) == !false);
     }

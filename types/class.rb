@@ -35,7 +35,7 @@ class ClassType
      raise "Cant evaluate cass type definition of class #{name}"
    end
    instance = new_instance()
-   return instance.run_function("main", [])
+   return instance.run_function("main", []).evaluate()
  end
 end
 

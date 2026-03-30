@@ -31,41 +31,52 @@ class Function < BaseNode
       if arg.eval_type() != expected_arg.eval_type()
         raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()}"
       end
+      expected_arg.reassign(arg)
     end
     
-    scope = FunctionScope.new(callee, args, @name)
+    scope = FunctionScope.new(callee, @args, @name)
 
     for node in @executables do
       puts "node: #{node.class}"
 
-      if node.is_a?(Variable) 
-        scope.set(node.name, node)
+      if node.is_a?(Variable) || node.is_a?(Reassign)
+        scope.set(node.name, resolve_node_value(node, scope))
         next
       end
-      
-      if node.is_a?(Reassign)
-        scope.set(node.name, node)
-          next
+
+      if node.is_a?(FunctionCall)
+        scope.run_function(node.name, node.args)
+        next
       end
       
       if node.is_a?(ReturnNode)
         # puts "ReturnNode: #{node.inspect}"
-        root = replace_viriable_lookup(node, scope)
+        root = replace_lookups(node, scope)
         if root.eval_type() != @return_type
           raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
         end
 
-        # puts "root: #{root.inspect}"
-        eval_res = root.evaluate()
-        if (eval_res.class <= BaseNode)
-          return scope.get(eval_res.name).evaluate()
-        end
-        return eval_res
+        puts "root: #{root.inspect}"
+        return root
+        # eval_res = root.evaluate()
+        # if (eval_res.class <= BaseNode)
+        #   return scope.get(eval_res.name).evaluate()
+        # end
+        # return eval_res
       end
     end
   end
 
-  def replace_viriable_lookup(node, scope)
+  def resolve_node_value(node, scope)
+    node_value = node.instance_variable_get(:@value)
+    if node_value.is_a?(FunctionCall)
+      return_node = scope.run_function(node_value.name, node_value.args)
+      node.instance_variable_set(:@value, return_node)
+    end
+    return node
+  end
+
+  def replace_lookups(node, scope)
     return node if node == nil
     # puts "--------------------------------"
 
@@ -74,27 +85,36 @@ class Function < BaseNode
       # puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
       # puts "After scope: node: #{node}"
-      replaced_node = replace_viriable_lookup(scoped_node, scope)
-      # puts "After replace_viriable_lookup: node: #{node}"
+      replaced_node = replace_lookups(scoped_node, scope)
+      # puts "After replace_lookups: node: #{node}"
       return replaced_node
+    end
+    if node.is_a?(FunctionCall)
+      # puts "Before: node: #{node}"
+      # puts "scope.get(node.name): #{scope.get(node.name)}"
+      function_call_value = scope.run_function(node.name, node.args)
+      # puts "After function call: function_call_value: #{function_call_value.class}"
+      # replaced_node = replace_lookups(scoped_node, scope)
+      # puts "After replace_lookups: node: #{node}"
+      return function_call_value
     end
 
     if (node.instance_variables.include?(:@lhs))
       # puts "For node: \n#{node} \nLooking up lhs: #{node.instance_variable_get(:@lhs)}"
       old_lhs = node.instance_variable_get(:@lhs)
-      replaced_node = replace_viriable_lookup(old_lhs, scope)
+      replaced_node = replace_lookups(old_lhs, scope)
       node.instance_variable_set(:@lhs, replaced_node)
     end
     if (node.instance_variables.include?(:@rhs))
       # puts "For node: \n#{node} \nLooking up rhs: #{node.instance_variable_get(:@rhs)}"
       old_rhs = node.instance_variable_get(:@rhs)
-      replaced_node = replace_viriable_lookup(old_rhs, scope)
+      replaced_node = replace_lookups(old_rhs, scope)
       node.instance_variable_set(:@rhs, replaced_node)
     end
     if (node.instance_variables.include?(:@value))
       # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@value)}"
       old_value = node.instance_variable_get(:@value)
-      replaced_node = replace_viriable_lookup(old_value, scope)
+      replaced_node = replace_lookups(old_value, scope)
       node.instance_variable_set(:@value, replaced_node)
     end
 
@@ -136,6 +156,10 @@ class FunctionScope
       @scope[key] = value
     end
   end
+
+  def run_function(name, args)
+    @callee.run_function(name, args, "inside")
+  end
 end
 
 class ReturnNode < BaseNode
@@ -153,4 +177,22 @@ class ReturnNode < BaseNode
     # return @value.evaluate() if @value.is_a?(BaseNode)
     return @value.evaluate()
   end
+end
+
+class FunctionCall < BaseNode
+  attr_accessor :name, :args
+
+  def initialize(name, args)
+    @name = name
+    @args = args
+  end
+
+  def eval_type()
+    raise "Tried to evaluate the type of a FunctionCall node"
+  end
+
+  def evaluate()
+    raise "Tried to evaluate a FunctionCall node"
+  end
+
 end

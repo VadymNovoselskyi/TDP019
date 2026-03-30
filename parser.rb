@@ -192,10 +192,30 @@ class CSMMParser
 
       rule :factor do
         match('(', :logical_expr, ')') {|_, a, _| a }
-        match(Integer) { | a | Int.new(a) }
-        match("-", Integer) { | _, a | Int.new(-a) }
-
+        match(:function_call)
         match(:literal)
+      end
+
+      rule :function_call do
+        match(:ID, "(", :opt_arg_list, ")") do | id, _, args, _ |
+          FunctionCall.new(id, args)
+        end
+      end
+
+      # TODO: logical_expr instead of literal
+      rule :opt_arg_list do
+        match(:literal, :arg_list_tail) do | arg, tail |
+          tail.append(arg)
+          tail
+        end
+        match(:empty) { [] }
+      end
+
+      rule :arg_list_tail do
+        match(",", :literal, :arg_list_tail) do | _, arg, tail |
+          tail.append(arg)
+        end
+        match(:empty) { [] }
       end
 
       rule :ID do
@@ -210,10 +230,15 @@ class CSMMParser
       end
 
       rule :literal do
-        match(/\'.\'/) { | a | Char.new(a) }
-        match(:ID) { | a | VariableLookup.new(a) }
+        match(Integer) { | a | Int.new(a) }
+        match("-", Integer) { | _, a | Int.new(-a) }
+
         match("true") {| a | Bool.new(true) }
         match("false") {| a | Bool.new(false) }
+        
+        match(/\'.\'/) { | a | Char.new(a) }
+
+        match(:ID) { | a | VariableLookup.new(a) }
       end
 
     end
@@ -232,7 +257,7 @@ class CSMMParser
 end
 
 if __FILE__ == $0
-  data = File.read("tests/bool.csmm")
+  data = File.read("tests/math.csmm")
   # data = File.read("bool.csmm")
   result = CSMMParser.new.parse(data)
   puts "=> #{result}"
