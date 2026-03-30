@@ -51,6 +51,10 @@ class Function < BaseNode
       if node.is_a?(ReturnNode)
         # puts "ReturnNode: #{node.inspect}"
         root = replace_viriable_lookup(node, scope)
+        if root.eval_type() != @return_type
+          raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
+        end
+
         # puts "root: #{root.inspect}"
         eval_res = root.evaluate()
         if (eval_res.class <= BaseNode)

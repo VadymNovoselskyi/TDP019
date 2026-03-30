@@ -232,7 +232,7 @@ class CSMMParser
 end
 
 if __FILE__ == $0
-  data = File.read("tests/math.csmm")
+  data = File.read("tests/bool.csmm")
   # data = File.read("bool.csmm")
   result = CSMMParser.new.parse(data)
   puts "=> #{result}"
