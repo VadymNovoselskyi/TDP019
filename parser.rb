@@ -231,13 +231,14 @@ class CSMMParser
   def parse(data)
     result = @csmmParser.parse data
     program_class = result.find { | e | e.name == "Program" }
-    puts "=> #{program_class.evaluate()}"
+    return program_class.evaluate()
   end
-
+  
 end
 
 if __FILE__ == $0
-  data = File.read("math.csmm")
+  data = File.read("tests/math.csmm")
   # data = File.read("bool.csmm")
-  CSMMParser.new.parse(data)
+  result = CSMMParser.new.parse(data)
+  puts "=> #{result}"
 end

@@ -1,0 +1,7 @@
+class Program {
+    public int main() {
+        bool a = true;
+        bool b = false;
+        return a && b;
+    }
+}
