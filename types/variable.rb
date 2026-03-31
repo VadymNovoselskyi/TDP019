@@ -22,6 +22,8 @@ class Variable < BaseNode
   end
   
   def evaluate()
+    puts "Evaluating Variable: #{@self.inspect}"
+
     if (@value == nil) 
       raise "Use of unassigned variable #{@name}"
     end
@@ -51,8 +53,8 @@ class VariableLookup < BaseNode
   end
 
   def clone()
-    raise "Tried to clone a VariableLookup node"
-    # return VariableLookup.new(@name)
+    # raise "Tried to clone a VariableLookup node"
+    return VariableLookup.new(@name)
   end
 end
 
@@ -72,7 +74,7 @@ class Reassign < BaseNode
   end
 
   def clone()
-    raise "Tried to clone a Reassign node"
-    # return Reassign.new(@name, @new_value.clone())
+    # raise "Tried to clone a Reassign node"
+    return Reassign.new(@name, @new_value.clone())
   end
 end

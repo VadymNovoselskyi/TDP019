@@ -15,6 +15,7 @@ class ComparisonNode < BaseNode
   end
   
   def evaluate()
+    puts "Evaluating ComparisonNode: #{@lhs.inspect} #{@op} #{@rhs.inspect}"
     if @lhs.eval_type() != @rhs.eval_type()
       raise "Invalid input to ComparisonNode. Expected #{@lhs.eval_type()} == #{@rhs.eval_type()}"
     end
@@ -40,6 +41,8 @@ class LogicNode < BaseNode
   end
   
   def evaluate()
+    puts "Evaluating LogicNode: #{@lhs.inspect} #{@op} #{@rhs.inspect}"
+
     if (@lhs.eval_type() != Bool || @rhs.eval_type() != Bool)
       raise "Invalid input to LogicNode. Expected Bool Bool, received: #{@lhs.eval_type()} #{@rhs.eval_type()}"
     end
@@ -61,6 +64,8 @@ class NotNode < BaseNode
   end
   
   def evaluate()
+    puts "Evaluating NotNode: #{@value.inspect}"
+    
     if (@value.eval_type() != Bool) 
       raise "Invalid input to NotNode. Expected Bool, received: #{@value.eval_type()}"
     end

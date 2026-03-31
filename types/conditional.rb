@@ -18,7 +18,8 @@ class Conditional < BaseNode
 
   def evaluate()
     if (@condition.evaluate())
-        return @if_block
+      puts "If block: #{@if_block.inspect}"
+      return @if_block
     end
 
     # for else_if in @else_if_blocks
@@ -32,5 +33,9 @@ class Conditional < BaseNode
     # end
 
     # return nil
+  end
+
+  def clone()
+    return Conditional.new(@condition.clone(), @if_block.clone(), @else_if_blocks.clone(), @else_block.clone())
   end
 end

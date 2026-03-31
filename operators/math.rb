@@ -13,6 +13,8 @@ class ArithNode < BaseNode
   end
   
   def evaluate() 
+    puts "Evaluating ArithNode: #{@lhs.inspect} #{@op} #{@rhs.inspect}"
+    
     if (![Int, Char].include?(@lhs.eval_type()) || ![Int, Char].include?(@rhs.eval_type()))
       raise "Operator #{@op} cannot be applied to operands of type #{@lhs.eval_type()} and #{@rhs.eval_type()}"
     end
