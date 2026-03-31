@@ -34,7 +34,7 @@ class Bool < BaseNode
 
   def clone()
     return Bool.new(@val)
-   end
+  end
 
 end
 

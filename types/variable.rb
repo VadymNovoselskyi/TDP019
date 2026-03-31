@@ -22,7 +22,7 @@ class Variable < BaseNode
   end
   
   def evaluate()
-    puts "Evaluating Variable: #{@self.inspect}"
+    # puts "Evaluating Variable: #{@self.inspect}"
 
     if (@value == nil) 
       raise "Use of unassigned variable #{@name}"

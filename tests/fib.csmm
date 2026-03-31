@@ -5,10 +5,9 @@ class Program {
         return Fibonacci(n);
     }
 
-    public int Fibonacci(int n)
-    {
+    public int Fibonacci(int n) {
         if ((n == 0) || n < 0) {
-            return 0;
+            return Fibonacci(n + 1) - 1;
         }
 
         if (n == 1) {

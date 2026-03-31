@@ -18,7 +18,7 @@ class Conditional < BaseNode
 
   def evaluate()
     if (@condition.evaluate())
-      puts "If block: #{@if_block.inspect}"
+      # puts "If block: #{@if_block.inspect}"
       return @if_block
     end
 
@@ -36,6 +36,11 @@ class Conditional < BaseNode
   end
 
   def clone()
-    return Conditional.new(@condition.clone(), @if_block.clone(), @else_if_blocks.clone(), @else_block.clone())
+    return Conditional.new(
+      @condition.clone(), 
+      @if_block.map(&:clone), 
+      @else_if_blocks.map() { | else_if | else_if.map(&:clone)}, 
+      @else_block != nil ? @else_block.map(&:clone) : nil
+    )
   end
 end
