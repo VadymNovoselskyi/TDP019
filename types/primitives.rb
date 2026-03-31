@@ -12,6 +12,10 @@ class Int < BaseNode
   def evaluate()
     return @number
   end
+
+  def clone()
+    return Int.new(@number)
+  end
    
 end
 
@@ -27,6 +31,11 @@ class Bool < BaseNode
   def evaluate()
     return @val
   end
+
+  def clone()
+    return Bool.new(@val)
+   end
+
 end
 
 class Char < BaseNode
@@ -45,6 +54,10 @@ class Char < BaseNode
   def to_s()
     return evaluate().chr()
   end
+
+  def clone()
+    return Char.new(to_s())
+  end
 end
 
 class Void < BaseNode
@@ -57,5 +70,9 @@ class Void < BaseNode
     
   def evaluate()
     return
+  end
+
+  def clone()
+    return Void.new()
   end
 end

@@ -28,6 +28,10 @@ class Variable < BaseNode
 
     return @value.evaluate()
   end
+
+  def clone()
+    return Variable.new(@type_class, @name, @value.clone())
+  end
    
 end
 
@@ -45,6 +49,11 @@ class VariableLookup < BaseNode
   def evaluate()
     raise "Tried to evaluate a VariableLookup node"
   end
+
+  def clone()
+    raise "Tried to clone a VariableLookup node"
+    # return VariableLookup.new(@name)
+  end
 end
 
 class Reassign < BaseNode
@@ -60,5 +69,10 @@ class Reassign < BaseNode
 
   def evaluate()
     return @new_value.evaluate()
+  end
+
+  def clone()
+    raise "Tried to clone a Reassign node"
+    # return Reassign.new(@name, @new_value.clone())
   end
 end

@@ -21,6 +21,10 @@ class ComparisonNode < BaseNode
 
     return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
+
+  def clone()
+    return ComparisonNode.new(@lhs.clone(), @op, @rhs.clone())
+  end
 end
 
 class LogicNode < BaseNode
@@ -41,6 +45,10 @@ class LogicNode < BaseNode
     end
     return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
+
+  def clone()
+    return LogicNode.new(@lhs.clone(), @op, @rhs.clone())
+  end
 end
 
 class NotNode < BaseNode
@@ -57,5 +65,9 @@ class NotNode < BaseNode
       raise "Invalid input to NotNode. Expected Bool, received: #{@value.eval_type()}"
     end
     return !@value.evaluate()
+  end
+
+  def clone()
+    return NotNode.new(@value.clone())
   end
 end

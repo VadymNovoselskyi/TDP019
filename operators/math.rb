@@ -18,4 +18,8 @@ class ArithNode < BaseNode
     end
     return @lhs.evaluate().send(@op, @rhs.evaluate())
   end
+
+  def clone()
+    return ArithNode.new(@lhs.clone(), @op, @rhs.clone())
+  end
 end

@@ -52,27 +52,44 @@ class Function < BaseNode
     end
 
     if node.is_a?(FunctionCall)
-      scope.run_function(node.name, node.args)
+      new_args = []
+      for arg in node.args
+        # puts "replacing lookups in arg: #{arg.inspect}"
+        new_args << replace_lookups(arg, scope).clone()
+      end
+      
+      scope.run_function(node.name, new_args)
       return
     end
-
+    
     if node.is_a?(Conditional)
-      executables = node.evaluate()
-      for executable in executables
-        result = handle_executable(executable, scope)
-        return result if result != nil
-      end
+      # puts "replacing lookups in condition: #{node.condition.inspect}"
+      puts "Running conditional with condition: #{node.condition.inspect}"
+      # new_cond = replace_lookups(node.condition, scope)
+      
+      # executables = node.evaluate()
+      # if executables == nil
+      #   return
+      # end
+
+      # # puts "executables: #{executables.inspect}"
+      # for executable in executables
+      #   # puts "replacing lookups in executable: #{executable.inspect}"
+      #   new_exec = replace_lookups(executable, scope)
+      #   result = handle_executable(new_exec, scope)
+      #   return result if result != nil
+      # end
       return
     end
     
     if node.is_a?(ReturnNode)
-      # puts "ReturnNode: #{node.inspect}"
+      puts "ReturnNode: #{node.inspect}"
       root = replace_lookups(node, scope)
       if root.eval_type() != @return_type
         raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
       end
 
-      # puts "root: #{root.inspect}"
+      puts "root: #{root.inspect}"
       return root
     end
   end
@@ -88,41 +105,47 @@ class Function < BaseNode
 
   def replace_lookups(node, scope)
     return node if node == nil
-    # puts "--------------------------------"
+    puts "--------------------------------"
 
     if node.is_a?(VariableLookup)
-      # puts "Before: node: #{node}"
-      # puts "scope.get(node.name): #{scope.get(node.name)}"
+      puts "Before: VariableLookup: #{node}"
+      puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
-      # puts "After scope: node: #{node}"
+      puts "After scope: scoped_node: #{scoped_node}"
       replaced_node = replace_lookups(scoped_node, scope)
-      # puts "After replace_lookups: node: #{node}"
+      puts "VariableLookup after replace_lookups: replaced_node: #{replaced_node}"
       return replaced_node
     end
     if node.is_a?(FunctionCall)
-      # puts "Before: node: #{node}"
+      puts "Before: FunctionCall: #{node}"
       # puts "scope.get(node.name): #{scope.get(node.name)}"
-      function_call_value = scope.run_function(node.name, node.args)
-      # puts "After function call: function_call_value: #{function_call_value.class}"
+      new_args = []
+      for arg in node.args
+        puts "replacing lookups in arg: #{arg.inspect}"
+        new_args << replace_lookups(arg, scope).clone()
+      end
+
+      function_call_value = scope.run_function(node.name, new_args)
+      puts "FunctionCall after function call: function_call_value: #{function_call_value.class}"
       # replaced_node = replace_lookups(scoped_node, scope)
-      # puts "After replace_lookups: node: #{node}"
+      puts "After replace_lookups: function_call_value: #{function_call_value}"
       return function_call_value
     end
 
     if (node.instance_variables.include?(:@lhs))
-      # puts "For node: \n#{node} \nLooking up lhs: #{node.instance_variable_get(:@lhs)}"
+      puts "For node: \n#{node} \nLooking up lhs: #{node.instance_variable_get(:@lhs)}"
       old_lhs = node.instance_variable_get(:@lhs)
       replaced_node = replace_lookups(old_lhs, scope)
       node.instance_variable_set(:@lhs, replaced_node)
     end
     if (node.instance_variables.include?(:@rhs))
-      # puts "For node: \n#{node} \nLooking up rhs: #{node.instance_variable_get(:@rhs)}"
+      puts "For node: \n#{node} \nLooking up rhs: #{node.instance_variable_get(:@rhs)}"
       old_rhs = node.instance_variable_get(:@rhs)
       replaced_node = replace_lookups(old_rhs, scope)
       node.instance_variable_set(:@rhs, replaced_node)
     end
     if (node.instance_variables.include?(:@value))
-      # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@value)}"
+      puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@value)}"
       old_value = node.instance_variable_get(:@value)
       replaced_node = replace_lookups(old_value, scope)
       node.instance_variable_set(:@value, replaced_node)

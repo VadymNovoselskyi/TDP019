@@ -140,17 +140,31 @@ class CSMMParser
         match("if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, then_branch, _, _ |
           Conditional.new(condition, then_branch.reverse())
         end
-        # match(:else_if_stmt)
-        # match(:else_stmt)
+
+        # match("if", "(", :logical_expr, ")", "{", :stmt_list, "}", :opt_else_ifs) do 
+        #   | _, _, condition, _, _, then_branch, _, _, else_if_branches |
+        #   Conditional.new(condition, then_branch.reverse(), else_if_branches)
+        # end
+
+        # match("if", "(", :logical_expr, ")", "{", :stmt_list, "}", :opt_else_ifs, :opt_else) do 
+        #   | _, _, condition, _, _, then_branch, _, _, else_if_branches, else_branch |
+        #   Conditional.new(condition, then_branch.reverse(), else_if_branches, else_branch)
+        # end
       end
 
-      # rule :else_if_stmt do
+      # rule :opt_else_ifs do
       #   match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _, _ |
       #     IfNode.new(condition, else_if_branch)
       #   end
       # end
 
-      # rule :else_stmt do
+      # rule :else_if do
+      #   match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _, _ |
+      #     IfNode.new(condition, else_if_branch)
+      #   end
+      # end
+
+      # rule :opt_else do
       #   match("else", "{", :stmt_list, "}") do | _, _, else_branch, _, _ |
       #     else_branch
       #   end
@@ -236,9 +250,8 @@ class CSMMParser
         end
       end
 
-      # TODO: logical_expr instead of literal
       rule :opt_arg_list do
-        match(:literal, :arg_list_tail) do | arg, tail |
+        match(:logical_expr, :arg_list_tail) do | arg, tail |
           tail.append(arg)
           tail
         end
@@ -291,7 +304,7 @@ class CSMMParser
 end
 
 if __FILE__ == $0
-  data = File.read("tests/math.csmm")
+  data = File.read("tests/fib.csmm")
   # data = File.read("bool.csmm")
   result = CSMMParser.new.parse(data)
   puts "=> #{result}"
