@@ -9,6 +9,12 @@ class Program {
         int tmp4 = 10 + tmp5;
         int test = add(5, 10);
         add(10, 20);
+
+        if (10 == 10) {
+            test = 5;
+            return test + 1;
+        }
+
         return test;
     }
 

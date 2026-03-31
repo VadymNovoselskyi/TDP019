@@ -1,5 +1,6 @@
 require "./base.rb"
 require "./types/primitives.rb"
+require "./types/conditional.rb"
 
 class Function < BaseNode
   attr_accessor :access_attr, :return_type, :name, :executables 
@@ -37,33 +38,42 @@ class Function < BaseNode
     scope = FunctionScope.new(callee, @args, @name)
 
     for node in @executables do
-      puts "node: #{node.class}"
+      result = handle_executable(node, scope)
+      return result if result != nil
+    end
+  end
 
-      if node.is_a?(Variable) || node.is_a?(Reassign)
-        scope.set(node.name, resolve_node_value(node, scope))
-        next
+  def handle_executable(node, scope)
+    puts "node: #{node.class}"
+
+    if node.is_a?(Variable) || node.is_a?(Reassign)
+      scope.set(node.name, resolve_node_value(node, scope))
+      return
+    end
+
+    if node.is_a?(FunctionCall)
+      scope.run_function(node.name, node.args)
+      return
+    end
+
+    if node.is_a?(Conditional)
+      executables = node.evaluate()
+      for executable in executables
+        result = handle_executable(executable, scope)
+        return result if result != nil
+      end
+      return
+    end
+    
+    if node.is_a?(ReturnNode)
+      # puts "ReturnNode: #{node.inspect}"
+      root = replace_lookups(node, scope)
+      if root.eval_type() != @return_type
+        raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
       end
 
-      if node.is_a?(FunctionCall)
-        scope.run_function(node.name, node.args)
-        next
-      end
-      
-      if node.is_a?(ReturnNode)
-        # puts "ReturnNode: #{node.inspect}"
-        root = replace_lookups(node, scope)
-        if root.eval_type() != @return_type
-          raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
-        end
-
-        puts "root: #{root.inspect}"
-        return root
-        # eval_res = root.evaluate()
-        # if (eval_res.class <= BaseNode)
-        #   return scope.get(eval_res.name).evaluate()
-        # end
-        # return eval_res
-      end
+      # puts "root: #{root.inspect}"
+      return root
     end
   end
 

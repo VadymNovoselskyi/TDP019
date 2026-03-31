@@ -4,6 +4,7 @@ require "./types/primitives.rb"
 require "./types/variable.rb"
 require "./types/function.rb"
 require "./types/class.rb"
+require "./types/conditional.rb"
 
 require "./operators/math.rb"
 require "./operators/logical.rb"
@@ -129,9 +130,41 @@ class CSMMParser
       rule :stmt do 
         match(:assignment)
         match(:function_call, ";")
+        match(:conditional_stmt)
+        match(:loop_stmt)
         match("return", :logical_expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
         match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
       end
+
+      rule :conditional_stmt do
+        match("if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, then_branch, _, _ |
+          Conditional.new(condition, then_branch.reverse())
+        end
+        # match(:else_if_stmt)
+        # match(:else_stmt)
+      end
+
+      # rule :else_if_stmt do
+      #   match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _, _ |
+      #     IfNode.new(condition, else_if_branch)
+      #   end
+      # end
+
+      # rule :else_stmt do
+      #   match("else", "{", :stmt_list, "}") do | _, _, else_branch, _, _ |
+      #     else_branch
+      #   end
+      # end
+
+      # rule :loop_stmt do
+      #   match(:while_stmt)
+      # end
+
+      # rule :while_stmt do
+      #   match("while", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, body, _, _ |
+      #     WhileNode.new(condition, body)
+      #   end
+      # end
 
       rule :assignment do
         match(:builtins_type, :ID, ";") { |type_class, name, _| 
