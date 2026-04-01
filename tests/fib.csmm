@@ -1,13 +1,13 @@
 class Program {
     public int main() {
-        int n = 10;
+        int n = 20;
         
         return Fibonacci(n);
     }
 
     public int Fibonacci(int n) {
         if ((n == 0) || n < 0) {
-            return Fibonacci(n + 1) - 1;
+            return 0;
         }
 
         if (n == 1) {

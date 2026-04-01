@@ -7,14 +7,20 @@ class TestCSMM < Test::Unit::TestCase
   end
 
   def test_math()
-    data = File.read("tests/math.csmm")
+    data = File.read("tests/math-function.csmm")
     result = @parser.parse(data)
-    assert_equal(60, result)
+    assert_equal(19, result)
   end
 
   def test_bool()
     data = File.read("tests/bool.csmm")
     result = @parser.parse(data)
-    assert_equal(false, result)
+    assert_equal(true, result)
+  end
+
+  def test_fibonacci()
+    data = File.read("tests/fib.csmm")
+    result = @parser.parse(data)
+    assert_equal(55, result)
   end
 end

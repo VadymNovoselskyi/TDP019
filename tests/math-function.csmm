@@ -10,14 +10,7 @@ class Program {
         int tmp4 = 10 + tmp5;
         add(10, 20);
 
-        int n = 1;
-
-        while (n > 10)
-        {
-            n = n + n;
-        }
-
-        return n;
+        return add(tmp4, add(5, 10));
     }
 
     private int add(int tmp, int b) {

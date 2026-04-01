@@ -5,6 +5,7 @@ require "./types/variable.rb"
 require "./types/function.rb"
 require "./types/class.rb"
 require "./types/conditional.rb"
+require "./types/iterator.rb"
 
 require "./operators/math.rb"
 require "./operators/logical.rb"
@@ -132,53 +133,65 @@ class CSMMParser
         match(:function_call, ";")
         match(:conditional_stmt)
         match(:loop_stmt)
+        match(:return_stmt)
+      end
+
+      rule :return_stmt do
         match("return", :logical_expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
         match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
       end
 
       rule :conditional_stmt do
-        match("if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, then_branch, _, _ |
-          Conditional.new(condition, then_branch.reverse())
+        # match(:if_stmt, :opt_else_ifs) do | if_branch, else_if_branches, else_branch | 
+        match(:if_stmt, :opt_else_ifs, :opt_else) do | if_branch, else_if_branches, else_branch | 
+          Conditional.new(if_branch, else_if_branches.reverse(), else_branch)
+        end
+        
+        match(:if_stmt, :opt_else_ifs) do | if_branch, else_if_branches | 
+          Conditional.new(if_branch, else_if_branches.reverse())
         end
 
-        # match("if", "(", :logical_expr, ")", "{", :stmt_list, "}", :opt_else_ifs) do 
-        #   | _, _, condition, _, _, then_branch, _, _, else_if_branches |
-        #   Conditional.new(condition, then_branch.reverse(), else_if_branches)
-        # end
-
-        # match("if", "(", :logical_expr, ")", "{", :stmt_list, "}", :opt_else_ifs, :opt_else) do 
-        #   | _, _, condition, _, _, then_branch, _, _, else_if_branches, else_branch |
-        #   Conditional.new(condition, then_branch.reverse(), else_if_branches, else_branch)
-        # end
+        match(:if_stmt) do | if_branch | 
+          Conditional.new(if_branch)
+        end
       end
 
-      # rule :opt_else_ifs do
-      #   match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _, _ |
-      #     IfNode.new(condition, else_if_branch)
-      #   end
-      # end
+      rule :if_stmt do
+        match("if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, then_branch, _ |
+          ConditionalBranch.new(condition, then_branch.reverse())
+        end
+      end
 
-      # rule :else_if do
-      #   match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _, _ |
-      #     IfNode.new(condition, else_if_branch)
-      #   end
-      # end
+      rule :opt_else_ifs do
+        match(:else_if_stmt, :opt_else_ifs) do | else_if_branch, else_if_branches |
+          else_if_branches.append(else_if_branch)
+        end
 
-      # rule :opt_else do
-      #   match("else", "{", :stmt_list, "}") do | _, _, else_branch, _, _ |
-      #     else_branch
-      #   end
-      # end
+        match(:empty) { [] }
+      end
 
-      # rule :loop_stmt do
-      #   match(:while_stmt)
-      # end
+      rule :else_if_stmt do
+        match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _ |
+          ConditionalBranch.new(condition, else_if_branch.reverse())
+        end
+      end
 
-      # rule :while_stmt do
-      #   match("while", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, body, _, _ |
-      #     WhileNode.new(condition, body)
-      #   end
-      # end
+      rule :opt_else do
+        match("else", "{", :stmt_list, "}") do | _, _, else_branch, _ | 
+          ConditionalBranch.new(Bool.new(true), else_branch.reverse())
+        end
+        match(:empty) { nil }
+      end
+
+      rule :loop_stmt do
+        match(:while_stmt)
+      end
+
+      rule :while_stmt do
+        match("while", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, body, _|
+          WhileNode.new(condition, body)
+        end
+      end
 
       rule :assignment do
         match(:builtins_type, :ID, ";") { |type_class, name, _| 
@@ -259,7 +272,7 @@ class CSMMParser
       end
 
       rule :arg_list_tail do
-        match(",", :literal, :arg_list_tail) do | _, arg, tail |
+        match(",", :logical_expr, :arg_list_tail) do | _, arg, tail |
           tail.append(arg)
         end
         match(:empty) { [] }
@@ -296,16 +309,26 @@ class CSMMParser
   end
   
   def parse(data)
+    start = Time.now
     result = @csmmParser.parse data
+    endtime = Time.now
+    puts "Parsing completed in #{endtime - start} seconds."
+    
+    puts "Parsing Done. Running program..."
     program_class = result.find { | e | e.name == "Program" }
-    return program_class.evaluate()
+    start = Time.now
+    res = program_class.evaluate()
+    endtime = Time.now
+    puts "Program executed in #{endtime - start} seconds."
+    return res
   end
   
 end
 
 if __FILE__ == $0
-  data = File.read("tests/fib.csmm")
-  # data = File.read("bool.csmm")
+  args = ARGV
+  filename = args[0] || "tests/fib.csmm"
+  data = File.read(filename)
   result = CSMMParser.new.parse(data)
   puts "=> #{result}"
 end

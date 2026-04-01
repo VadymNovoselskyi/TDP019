@@ -1,5 +1,18 @@
 require "./base.rb"
 
+def get_primitive_node(node)
+  value = node.evaluate()
+  if value.is_a?(Integer)
+    return Int.new(value)
+  elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+    return Bool.new(value)
+  elsif value.is_a?(String) && value.length == 1
+    return Char.new(value)
+  else
+    raise "Unsupported primitive type: #{value.class}"
+  end
+end
+
 class Int < BaseNode
   def initialize(number)
     @number = number

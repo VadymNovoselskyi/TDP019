@@ -1,6 +1,7 @@
 require "./base.rb"
 require "./types/primitives.rb"
 require "./types/conditional.rb"
+require "./types/iterator.rb"
 
 class Function < BaseNode
   attr_accessor :access_attr, :return_type, :name, :executables 
@@ -34,8 +35,8 @@ class Function < BaseNode
       if arg.eval_type() != expected_arg.eval_type()
         raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()}"
       end
-      # puts "Reassigning argument: #{arg.inspect} to #{expected_arg.inspect}"
-      expected_arg.reassign(arg)
+      # puts "Reassigning argument: #{get_primitive_node(arg)} to #{expected_arg.inspect}"
+      expected_arg.reassign(get_primitive_node(arg))
     end
     
     scope = FunctionScope.new(callee, clone_args, @name)
@@ -53,10 +54,16 @@ class Function < BaseNode
     # puts "node: #{node}"
 
     if node.is_a?(Variable) || node.is_a?(Reassign)
-      node_value = node.instance_variable_get(:@value)
+      value_name = node.is_a?(Variable) ? :@value : :@new_value
+      node_value = node.instance_variable_get(value_name)
+
       if node_value.is_a?(FunctionCall)
         resolved_value = call_function(scope, node_value.name, node_value.args)
-        node.instance_variable_set(:@value, resolved_value)
+        node.instance_variable_set(value_name, resolved_value)
+      elsif node_value
+        replace_lookups(node_value, scope)
+        resolved_value = get_primitive_node(node_value)
+        node.instance_variable_set(value_name, resolved_value)
       end
 
       scope.set(node.name, node)
@@ -68,9 +75,33 @@ class Function < BaseNode
       return
     end
     
+    if node.class < Iterable
+      puts "Handling iterable node: #{node.inspect}"
+      puts "Should run? #{node.get_condition()}"
+      
+      while true
+        condition = replace_lookups(node.get_condition().clone(), scope)
+        break if condition.evaluate()
+
+        iter_executables = node.evaluate()
+        
+        for executable in iter_executables do
+          # puts "--------------------------------"
+          # puts "executable before replace_lookups: #{executable.inspect}"
+          # replace_lookups(executable, scope)
+          # puts "executable after replace_lookups: #{executable.inspect}"
+          result = handle_executable(executable, scope)
+          return result if result != nil
+        end
+      end
+      return
+    end
+
     if node.is_a?(Conditional)
-      # puts "replacing lookups in condition: #{node.condition.inspect}"
-      replace_lookups(node.condition, scope)
+      # puts "replacing lookups for conditions: #{node.conditions.inspect}"
+      for condition in node.conditions
+        replace_lookups(condition, scope)
+      end
       
       executables = node.evaluate()
       # puts "executables: #{executables.inspect}"
@@ -107,7 +138,7 @@ class Function < BaseNode
       # puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
       replace_lookups(scoped_node, scope)
-      # puts "VariableLookup after replace_lookups: replaced_node: #{replaced_node}"
+      # puts "VariableLookup after replace_lookups: scoped_node: #{scoped_node}"
       return scoped_node
     elsif node.is_a?(FunctionCall)
       # puts "Before: FunctionCall: #{node}"
@@ -134,6 +165,12 @@ class Function < BaseNode
       old_value = node.instance_variable_get(:@value)
       replaced_node = replace_lookups(old_value, scope)
       node.instance_variable_set(:@value, replaced_node)
+    end
+    if (node.instance_variables.include?(:@new_value))
+      # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@new_value)}"
+      old_value = node.instance_variable_get(:@new_value)
+      replaced_node = replace_lookups(old_value, scope)
+      node.instance_variable_set(:@new_value, replaced_node)
     end
 
     return node
