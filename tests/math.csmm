@@ -12,7 +12,7 @@ class Program {
 
         int n = 1;
 
-        while (n > 10)
+        while (n < 10)
         {
             n = n + n;
         }

@@ -81,7 +81,7 @@ class Function < BaseNode
       
       while true
         condition = replace_lookups(node.get_condition().clone(), scope)
-        break if condition.evaluate()
+        break unless condition.evaluate()
 
         iter_executables = node.evaluate()
         
