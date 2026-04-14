@@ -61,10 +61,7 @@ class Function < BaseNode
         resolved_value = call_function(scope, node_value.name, node_value.args)
         node.instance_variable_set(value_name, resolved_value)
       elsif node_value
-        # puts "node_value: #{node_value}"
-        # puts "node_value before replace_lookups: #{node_value}"
         node_value = replace_lookups(node_value, scope)
-        # puts "node_value after replace_lookups: #{node_value}"
         resolved_value = get_primitive_node(node_value)
         node.instance_variable_set(value_name, resolved_value)
       end
@@ -87,10 +84,7 @@ class Function < BaseNode
       end
       
       while true
-        # puts "Condition before replace_lookups: #{node.get_condition()}"
         condition = replace_lookups(node.get_condition().clone(), scope)
-        # puts "Condition after replace_lookups: #{condition}"
-        # puts "Condition evaluated: #{condition.evaluate()}", "\n"
         break unless condition.evaluate()
 
         iter_executables = node.evaluate()
