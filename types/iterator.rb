@@ -42,3 +42,30 @@ class WhileNode < Iterable
     return WhileNode.new(@condition.clone(), @body.map(&:clone))
   end
 end
+
+class ForNode < Iterable
+  attr_accessor :initial_block, :condition, :increment_block, :body
+
+  def initialize(initial_block, condition, increment_block, body)
+    if (!condition.eval_type() == Bool)
+      raise "Condition of a for loop must be of type Boolean, got #{condition.eval_type()}"
+    end
+
+    @initial_block = initial_block
+    @condition = condition
+    @increment_block = increment_block
+    @body = body
+  end
+
+  def get_condition()
+    return @condition
+  end
+
+  def evaluate()
+    return @body.map(&:clone)
+  end
+
+  def clone()
+    return ForNode.new(@initial_block.clone(), @condition.clone(), @increment_block.clone(), @body.map(&:clone))
+  end
+end

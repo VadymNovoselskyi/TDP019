@@ -51,7 +51,7 @@ class Function < BaseNode
 
   def handle_executable(node, scope)
     # puts "handling executable of type: #{node.class}"
-    # puts "node: #{node}"
+    # puts "node: #{node}", "\n"
 
     if node.is_a?(Variable) || node.is_a?(Reassign)
       value_name = node.is_a?(Variable) ? :@value : :@new_value
@@ -61,7 +61,10 @@ class Function < BaseNode
         resolved_value = call_function(scope, node_value.name, node_value.args)
         node.instance_variable_set(value_name, resolved_value)
       elsif node_value
-        replace_lookups(node_value, scope)
+        # puts "node_value: #{node_value}"
+        # puts "node_value before replace_lookups: #{node_value}"
+        node_value = replace_lookups(node_value, scope)
+        # puts "node_value after replace_lookups: #{node_value}"
         resolved_value = get_primitive_node(node_value)
         node.instance_variable_set(value_name, resolved_value)
       end
@@ -76,15 +79,23 @@ class Function < BaseNode
     end
     
     if node.class < Iterable
-      puts "Handling iterable node: #{node.inspect}"
-      puts "Should run? #{node.get_condition()}"
+      puts "Handling iterable node: #{node}"
+      puts "Should run? #{node.get_condition()}", "\n"
+      if node.is_a?(ForNode)
+        # puts "ForNode initial block: #{node.initial_block}"
+        handle_executable(node.initial_block, scope)
+      end
       
       while true
+        # puts "Condition before replace_lookups: #{node.get_condition()}"
         condition = replace_lookups(node.get_condition().clone(), scope)
+        # puts "Condition after replace_lookups: #{condition}"
+        # puts "Condition evaluated: #{condition.evaluate()}", "\n"
         break unless condition.evaluate()
 
         iter_executables = node.evaluate()
-        
+        # puts "Iter executables: #{iter_executables}"
+
         for executable in iter_executables do
           # puts "--------------------------------"
           # puts "executable before replace_lookups: #{executable.inspect}"
@@ -92,6 +103,10 @@ class Function < BaseNode
           # puts "executable after replace_lookups: #{executable.inspect}"
           result = handle_executable(executable, scope)
           return result if result != nil
+        end
+
+        if node.is_a?(ForNode)
+          handle_executable(node.increment_block.clone(), scope)
         end
       end
       return
