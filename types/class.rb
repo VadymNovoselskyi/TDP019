@@ -88,15 +88,15 @@ class ClassInstanceType
    end
 
    if (callee == "inside" || callee == "subclass")
-     if (@variable_scope[:private][name] != nil)
-       return @variable_scope[:private][name]
-     end
+    if (@variable_scope[:protected][name] != nil)
+      return @variable_scope[:protected][name]
+    end
    end
-
-   if (callee == "subclass")
-     if (@variable_scope[:protected][name] != nil)
-       return @variable_scope[:protected][name]
-     end
+   
+   if (callee == "inside")
+    if (@variable_scope[:private][name] != nil)
+      return @variable_scope[:private][name]
+    end
    end
 
    if (@super != nil)
@@ -106,6 +106,33 @@ class ClassInstanceType
    return nil
   #  raise "Class #{@class_name} doesn't have a variable named: #{name}"
    
+ end
+
+ def set_attribute(name, value, callee = "outside")
+  if (@variable_scope[:public][name] != nil)
+    @variable_scope[:public][name].reassign(value)
+    return
+  end
+
+  if (callee == "inside" || callee == "subclass")
+    if (@variable_scope[:private][name] != nil)
+      @variable_scope[:private][name].reassign(value)
+      return
+    end
+  end
+
+  if (callee == "inside")
+    if (@variable_scope[:protected][name] != nil)
+      @variable_scope[:protected][name].reassign(value)
+      return
+    end
+  end
+  
+  if (@super != nil)
+    @super.set_attribute(name, value, "subclass")
+    return
+  end
+  raise "Class #{@class_name} doesn't have a variable named: #{name}"
  end
 
  def run_function(name, args, callee = "outside")
@@ -154,8 +181,29 @@ class ClassAttributeLookup < BaseNode
   end
 
   def clone()
-    # raise "Tried to clone a ClassAttributeLookup node"
     return ClassAttributeLookup.new(@class_name, @name)
+  end
+end
+
+class ClassAttributeModification < BaseNode
+  attr_accessor :class_name, :name, :value
+
+  def initialize(class_name, name, value)
+    @class_name = class_name
+    @name = name
+    @value = value
+  end
+
+  def eval_type()
+    raise "Tried to evaluate the type of a ClassAttributeModification node"
+  end
+
+  def evaluate()
+    raise "Tried to evaluate a ClassAttributeModification node"
+  end
+
+  def clone()
+    return ClassAttributeModification.new(@class_name, @name, @value.clone())
   end
 end
 
@@ -177,7 +225,6 @@ class ClassMethodCall < BaseNode
   end
 
   def clone()
-    # raise "Tried to clone a ClassMethodCall node"
     return ClassMethodCall.new(@class_name, @name, @args.map(&:clone))
   end
 end

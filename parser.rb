@@ -223,6 +223,11 @@ class CSMMParser
         match(:ID, "=", :logical_expr) do |name, _, value| 
           Reassign.new(name, value)
         end
+
+        # Class attribute modification
+        match(:ID, ".", :ID, "=", :logical_expr) do | class_name, _, attribute_name, _, value |
+          ClassAttributeModification.new(class_name, attribute_name, value)
+        end
       end
 
       # Boolean Logic

@@ -53,10 +53,11 @@ class Function < BaseNode
     # puts "handling executable of type: #{node.class}"
     # puts "node: #{node}", "\n"
 
-    if node.is_a?(Variable) || node.is_a?(Reassign)
-      value_name = node.is_a?(Variable) ? :@value : :@new_value
+    if node.is_a?(Variable) || node.is_a?(Reassign) || node.is_a?(ClassAttributeModification)
+      value_name = node.is_a?(Variable) || node.is_a?(ClassAttributeModification) ? :@value : :@new_value
       node_value = node.instance_variable_get(value_name)
 
+      # Resolve the value/new_value of the node
       if node_value.is_a?(FunctionCall)
         resolved_value = call_function(scope, node_value.name, node_value.args)
         node.instance_variable_set(value_name, resolved_value)
@@ -66,6 +67,9 @@ class Function < BaseNode
         node.instance_variable_set(value_name, resolved_value)
       end
 
+      if node.is_a?(ClassAttributeModification)
+        scope.set_attribute(node.class_name, node.name, node_value)
+      end
       scope.set(node.name, node)
       return
     end
@@ -248,6 +252,14 @@ class FunctionScope
     end
     class_instance = @scope[class_name].value
     return class_instance.get_attribute(name, "outside")
+  end
+
+  def set_attribute(class_name, name, value)
+    if !@scope.has_key?(class_name)
+      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+    end
+    class_instance = @scope[class_name].value
+    class_instance.set_attribute(name, value)
   end
 
   def run_class_method(class_name, name, args)
