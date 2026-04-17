@@ -9,7 +9,7 @@ class TestCSMM < Test::Unit::TestCase
   def test_math()
     data = File.read("tests/math-function.csmm")
     result = @parser.parse(data)
-    assert_equal(19, result)
+    assert_equal(29, result)
   end
 
   def test_bool()

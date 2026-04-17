@@ -10,10 +10,14 @@ class Program {
         int tmp4 = 10 + tmp5;
         add(10, 20);
 
-        return add(tmp4, add(5, 10));
+        return add(tmp4, add(5, 10)) + get_10();
     }
 
     private int add(int tmp, int b) {
         return tmp + b;
+    }
+
+    private int get_10() {
+        return 10;
     }
 }

@@ -22,16 +22,17 @@ reserved_words = [
   "nil",
   "public",
   "private",
-  "protected"
+  "protected",
+  "new"
 ]
-$id_regex = /^(?!#{reserved_words.join('|')})\w*/
+$id_regex = /^(?!#{reserved_words.join('|')})\w+/
 
 class CSMMParser
   def initialize
 
     @logger = LoggerFactory.get()
 
-    @variables = {}
+    @@class_types = {}
     @csmmParser = Parser.new("CSMM Parser") do
       token(/#.*/)
       token(/\s+/) # Ignore whitespace
@@ -66,7 +67,8 @@ class CSMMParser
 
       rule :class_decl do
          match("class", :ID, "{", :member_decls, "}") do |_, class_name, _, decls, _ | 
-          ClassType.new(class_name, decls)
+          @@class_types[class_name] = ClassType.new(class_name, decls)
+          @@class_types[class_name]
         end
       end
 
@@ -83,13 +85,13 @@ class CSMMParser
       end
 
       rule :field_decl do
-        match(:access_modifier, :builtins_type, :ID, ";") do |access, type_class, name, _|  
+        match(:access_modifier, :type, :ID, ";") do |access, type_class, name, _|  
           ClassVariable.new(type_class, name, access)
         end 
       end
       
       rule :method_decl do 
-        match(:access_modifier, :builtins_type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
+        match(:access_modifier, :type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
           | access, type, id , _, params, _,  _, stmt_list, _ |
           Function.new(access, type, id, params, stmt_list.reverse())
         }
@@ -117,7 +119,7 @@ class CSMMParser
       end
 
       rule :param do
-        match(:builtins_type, :ID) { | type_class, name |
+        match(:type, :ID) { | type_class, name |
           Variable.new(type_class, name)}
       end
 
@@ -142,7 +144,6 @@ class CSMMParser
       end
 
       rule :conditional_stmt do
-        # match(:if_stmt, :opt_else_ifs) do | if_branch, else_if_branches, else_branch | 
         match(:if_stmt, :opt_else_ifs, :opt_else) do | if_branch, else_if_branches, else_branch | 
           Conditional.new(if_branch, else_if_branches.reverse(), else_branch)
         end
@@ -208,12 +209,12 @@ class CSMMParser
       end
       
       rule :declaration do
-        match(:builtins_type, :ID) { |type_class, name| 
+        match(:type, :ID) { |type_class, name| 
         Variable.new(type_class, name)
       }
       end
       rule :assignment_stmt do
-        match(:builtins_type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
+        match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
           Variable.new(type_class, name, value)
         end
       end
@@ -271,8 +272,17 @@ class CSMMParser
 
       rule :factor do
         match('(', :logical_expr, ')') {|_, a, _| a }
+        match(:class_instanciation)
         match(:function_call)
         match(:literal)
+      end
+
+      rule :class_instanciation do
+        match("new", :class_type, "(", :opt_arg_list, ")") do | _, class_type, _, args, _ |
+          # TODO: add args
+          # puts "Class type: #{class_type}"
+          class_type.new_instance()
+        end
       end
 
       rule :function_call do
@@ -298,6 +308,15 @@ class CSMMParser
 
       rule :ID do
         match($id_regex)
+      end
+
+      rule :type do
+        match(:builtins_type)
+        match(:class_type)
+      end
+
+      rule :class_type do
+        match(:ID) { | a | @@class_types[a] }
       end
 
       rule :builtins_type do
@@ -338,6 +357,7 @@ class CSMMParser
     res = program_class.evaluate()
     endtime = Time.now
     puts "Program executed in #{endtime - start} seconds."
+    # puts "Class types: #{@@class_types}"
     return res
   end
   

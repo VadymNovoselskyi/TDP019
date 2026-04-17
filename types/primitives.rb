@@ -8,6 +8,8 @@ def get_primitive_node(node)
     return Bool.new(value)
   elsif value.is_a?(String) && value.length == 1
     return Char.new(value)
+  elsif value.is_a?(ClassInstanceType)
+    return value
   else
     raise "Unsupported primitive type: #{value.class}"
   end

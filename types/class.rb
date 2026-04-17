@@ -30,6 +30,7 @@ class ClassType
    @member_functions = member_functions
  end
 
+  #  TODO: add args
  def new_instance()
    return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name)
  end
@@ -129,5 +130,9 @@ class ClassInstanceType
 
    
    raise "Class #{@class_name} doesn't have a function named: #{name}"
+ end
+
+ def evaluate()
+  return self
  end
 end

@@ -1,0 +1,12 @@
+class Test {
+    public int main() {
+        return 2;
+    }
+}
+
+class Program {
+    public int main() {
+        Test test = new Test();
+        return 0;
+    }
+}
