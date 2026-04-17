@@ -69,14 +69,21 @@ class Function < BaseNode
 
       if node.is_a?(ClassAttributeModification)
         scope.set_attribute(node.class_name, node.name, node_value)
+      else
+        scope.set(node.name, node)
       end
-      scope.set(node.name, node)
       return
     end
 
     if node.is_a?(FunctionCall)
       call_function(scope, node.name, node.args)
       return
+    end
+
+    if node.is_a?(ClassMethodCall)
+      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      scope.run_class_method(node.class_name, node.name, new_args)
+      return 
     end
     
     if node.class < Iterable

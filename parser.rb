@@ -133,9 +133,13 @@ class CSMMParser
 
       rule :stmt do 
         match(:assignment)
+
+        match(:class_method_call, ";")
         match(:function_call, ";")
+
         match(:conditional_stmt)
         match(:loop_stmt)
+
         match(:return_stmt)
       end
 

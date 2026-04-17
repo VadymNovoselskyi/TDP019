@@ -3,6 +3,10 @@ class Test {
     protected int prot_var;
     private int priv_var;
 
+    public void hidden_func() {
+        pub_var = 14;
+    }
+
     public int double(int res) {
         return res * 2;
     }
@@ -16,6 +20,9 @@ class Program {
         int should_be_10 = test.pub_var;
 
         int should_be_6 = test.double(3);
-        return should_be_10 + should_be_6;
+
+        test.hidden_func();
+        test.pub_var = 100;
+        return should_be_10 + should_be_6 + test.pub_var;
     }
 }
