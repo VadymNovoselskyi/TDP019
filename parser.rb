@@ -184,23 +184,41 @@ class CSMMParser
       end
 
       rule :loop_stmt do
+        match(:for_stmt)
         match(:while_stmt)
+      end
+
+      rule :for_stmt do
+        match("for", "(", :assignment_stmt, ";", :logical_expr, ";", :reassignment, ")", "{", :stmt_list, "}") { 
+          | _, _, initial_block, _, condition, _, increment_block, _, _, body, _|
+          ForNode.new(initial_block, condition, increment_block, body.reverse())
+        }
       end
 
       rule :while_stmt do
         match("while", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, body, _|
-          WhileNode.new(condition, body)
+          WhileNode.new(condition, body.reverse())
         end
       end
 
       rule :assignment do
-        match(:builtins_type, :ID, ";") { |type_class, name, _| 
-          Variable.new(type_class, name)
-        }
-        match(:builtins_type, :ID, "=", :logical_expr, ";") do |type_class, name, _, value, _|  
+        match(:declaration, ";")
+        match(:assignment_stmt, ";")
+        match(:reassignment, ";")
+      end
+      
+      rule :declaration do
+        match(:builtins_type, :ID) { |type_class, name| 
+        Variable.new(type_class, name)
+      }
+      end
+      rule :assignment_stmt do
+        match(:builtins_type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
           Variable.new(type_class, name, value)
         end
-        match(:ID, "=", :logical_expr, ";") do |name, _, value, _| 
+      end
+      rule :reassignment do
+        match(:ID, "=", :logical_expr) do |name, _, value| 
           Reassign.new(name, value)
         end
       end
