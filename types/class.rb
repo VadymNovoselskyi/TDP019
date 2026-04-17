@@ -115,15 +115,15 @@ class ClassInstanceType
   end
 
   if (callee == "inside" || callee == "subclass")
-    if (@variable_scope[:private][name] != nil)
-      @variable_scope[:private][name].reassign(value)
+    if (@variable_scope[:protected][name] != nil)
+      @variable_scope[:protected][name].reassign(value)
       return
     end
   end
 
   if (callee == "inside")
-    if (@variable_scope[:protected][name] != nil)
-      @variable_scope[:protected][name].reassign(value)
+    if (@variable_scope[:private][name] != nil)
+      @variable_scope[:private][name].reassign(value)
       return
     end
   end
@@ -140,14 +140,14 @@ class ClassInstanceType
      return @function_scope[:public][name].evaluate(self, args)
    end
    if (callee == "inside" || callee == "subclass")
-     if (@function_scope[:private][name] != nil)
-       return @function_scope[:private][name].evaluate(self, args)
+     if (@function_scope[:protected][name] != nil)
+       return @function_scope[:protected][name].evaluate(self, args)
      end
    end
 
    if (callee == "subclass")
-     if (@function_scope[:protected][name] != nil)
-       return @function_scope[:protected][name].evaluate(self, args)
+     if (@function_scope[:private][name] != nil)
+       return @function_scope[:private][name].evaluate(self, args)
      end
    end
 
