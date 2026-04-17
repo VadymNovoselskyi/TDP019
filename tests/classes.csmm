@@ -1,12 +1,17 @@
 class Test {
-    public int main() {
-        return 2;
+    public int pub_var;
+    protected int prot_var;
+    private int priv_var;
+
+    public int get_value(int res) {
+        return res + 2;
     }
 }
 
 class Program {
     public int main() {
         Test test = new Test();
-        return 0;
+        int a = test.get_value(5);
+        return a + a;
     }
 }

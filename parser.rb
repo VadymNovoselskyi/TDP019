@@ -84,6 +84,7 @@ class CSMMParser
         match(:method_decl)
       end
 
+      # TODO: Maybe be able to assign, not just declare?
       rule :field_decl do
         match(:access_modifier, :type, :ID, ";") do |access, type_class, name, _|  
           ClassVariable.new(type_class, name, access)
@@ -272,7 +273,11 @@ class CSMMParser
 
       rule :factor do
         match('(', :logical_expr, ')') {|_, a, _| a }
+
         match(:class_instanciation)
+        match(:class_method_call)
+        match(:class_attribute_access)
+
         match(:function_call)
         match(:literal)
       end
@@ -282,6 +287,18 @@ class CSMMParser
           # TODO: add args
           # puts "Class type: #{class_type}"
           class_type.new_instance()
+        end
+      end
+
+      rule :class_attribute_access do
+        match(:ID, ".", :ID) do | class_name, _, attribute_name |
+          ClassAttributeLookup.new(class_name, attribute_name)
+        end
+      end
+
+      rule :class_method_call do
+        match(:ID, ".", :ID, "(", :opt_arg_list, ")") do | class_name, _, method_name, _, args, _ |
+          ClassMethodCall.new(class_name, method_name, args)
         end
       end
 

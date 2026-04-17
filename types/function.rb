@@ -155,6 +155,16 @@ class Function < BaseNode
       # puts "FunctionCall after function call: function_call_value: #{function_call_value.class}"
       # puts "After replace_lookups: function_call_value: #{function_call_value}"
       return function_call_value
+    elsif node.is_a?(ClassAttributeLookup)
+      # puts "Before ClassAttributeLookup: #{node}"
+      class_attribute_value = scope.get_attribute(node.class_name, node.name)
+      # puts "After ClassAttributeLookup: #{class_attribute_value}"
+      return class_attribute_value
+    elsif node.is_a?(ClassMethodCall)
+      # puts "Before ClassMethodCall: #{node}"
+      class_method_value = scope.run_class_method(node.class_name, node.name, node.args)
+      # puts "After ClassMethodCall: #{class_method_value}"
+      return class_method_value
     end
 
     if (node.instance_variables.include?(:@lhs))
@@ -230,6 +240,22 @@ class FunctionScope
 
   def run_function(name, args)
     return @callee.run_function(name, args, "inside")
+  end
+
+  def get_attribute(class_name, name)
+    if !@scope.has_key?(class_name)
+      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+    end
+    class_instance = @scope[class_name].value
+    return class_instance.get_attribute(name, "outside")
+  end
+
+  def run_class_method(class_name, name, args)
+    if !@scope.has_key?(class_name)
+      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+    end
+    class_instance = @scope[class_name].value
+    return class_instance.run_function(name, args, "outside")
   end
 end
 

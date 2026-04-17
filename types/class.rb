@@ -136,3 +136,48 @@ class ClassInstanceType
   return self
  end
 end
+
+class ClassAttributeLookup < BaseNode
+  attr_accessor :class_name, :name
+
+  def initialize(class_name, name)
+    @class_name = class_name
+    @name = name
+  end
+
+  def eval_type()
+    raise "Tried to evaluate the type of a ClassAttributeLookup node"
+  end
+
+  def evaluate()
+    raise "Tried to evaluate a ClassAttributeLookup node"
+  end
+
+  def clone()
+    # raise "Tried to clone a ClassAttributeLookup node"
+    return ClassAttributeLookup.new(@class_name, @name)
+  end
+end
+
+class ClassMethodCall < BaseNode
+  attr_accessor :class_name, :name, :args
+
+  def initialize(class_name, name, args)
+    @class_name = class_name
+    @name = name
+    @args = args
+  end  
+
+  def eval_type()
+    raise "Tried to evaluate the type of a ClassMethodCall node"
+  end
+
+  def evaluate()
+    raise "Tried to evaluate a ClassMethodCall node"
+  end
+
+  def clone()
+    # raise "Tried to clone a ClassMethodCall node"
+    return ClassMethodCall.new(@class_name, @name, @args.map(&:clone))
+  end
+end
