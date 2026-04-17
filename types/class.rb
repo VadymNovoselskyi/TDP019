@@ -6,6 +6,10 @@ class ClassVariable < Variable
     super(type_class, name, nil)
     @access_attr = access_attr
   end
+
+  def clone()
+    return ClassVariable.new(@type_class, @name, @access_attr)
+  end
 end
 
 class ClassType
@@ -27,7 +31,7 @@ class ClassType
  end
 
  def new_instance()
-   return ClassInstanceType.new(@member_variables, @member_functions, @name)
+   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name)
  end
 
  def evaluate()
