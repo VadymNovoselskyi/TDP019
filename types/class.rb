@@ -145,7 +145,7 @@ class ClassInstanceType
      end
    end
 
-   if (callee == "subclass")
+   if (callee == "inside")
      if (@function_scope[:private][name] != nil)
        return @function_scope[:private][name].evaluate(self, args)
      end
