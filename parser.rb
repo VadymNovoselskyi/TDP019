@@ -24,7 +24,8 @@ reserved_words = [
   "public",
   "private",
   "protected",
-  "new"
+  "new",
+  "WriteLine"
 ]
 $id_regex = /^(?!#{reserved_words.join('|')})\w+/
 
@@ -141,12 +142,20 @@ class CSMMParser
         match(:conditional_stmt)
         match(:loop_stmt)
 
+        match(:print_stmt)
+
         match(:return_stmt)
       end
 
       rule :return_stmt do
         match("return", :logical_expr, ";") { | _, expr, _ | ReturnNode.new(expr) }
         match("return", :ID, ";") { | _, id, _ | ReturnNode.new(id) }
+      end
+
+      rule :print_stmt do
+        match("WriteLine", "(", :opt_arg_list, ")", ";") do | _, _, expr, _, _ |
+          WriteLine.new(expr)
+        end
       end
 
       rule :conditional_stmt do
@@ -216,26 +225,29 @@ class CSMMParser
       
       rule :declaration do
         match(:type, :ID) { |type_class, name| 
+        puts "Declaring variable of type #{type_class} with name #{name}"
         Variable.new(type_class, name)
       }
       end
 
       rule :assignment_stmt do
         match("List", "<", :type, ">", :ID, "=", :list_instanciation) do |_, _, type_class, _, name, _, values| 
-          puts "List type: #{type_class}"
-          puts "List name: #{name}"
-          puts "List values: #{values}"
-          list_instance = ListType.new(type_class).new_instance(values)
+          # puts "List type: #{type_class}"
+          # puts "List name: #{name}"
+          # puts "List values: #{values}"
+          list_instance = ListType.new(type_class).new_instance(values.reverse())
           Variable.new(type_class, name, list_instance)
         end
 
         match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
+          puts "Assigning variable of type #{type_class} with name #{name} and value #{value}"
           Variable.new(type_class, name, value)
         end
       end
 
       rule :reassignment do
         match(:ID, "=", :logical_expr) do |name, _, value| 
+          puts "Reassigning variable with name #{name} to value #{value}"
           Reassign.new(name, value)
         end
 

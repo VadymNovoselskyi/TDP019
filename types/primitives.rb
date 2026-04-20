@@ -68,12 +68,8 @@ class Char < BaseNode
     return @val
   end
 
-  def to_s()
-    return evaluate().chr()
-  end
-
   def clone()
-    return Char.new(to_s())
+    return Char.new("'#{@val.chr()}'")
   end
 end
 

@@ -2,6 +2,7 @@ require "./base.rb"
 require "./types/primitives.rb"
 require "./types/conditional.rb"
 require "./types/iterator.rb"
+require "./types/writeLine.rb"
 
 class Function < BaseNode
   attr_accessor :access_attr, :return_type, :name, :executables 
@@ -52,6 +53,26 @@ class Function < BaseNode
   def handle_executable(node, scope)
     puts "handling executable of type: #{node.class}"
     puts "node: #{node}", "\n"
+
+    if node.is_a?(WriteLine)
+      if node.evaluate().length == 0
+        puts ""
+        return
+      end
+
+      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
+      for arg in node.evaluate()
+        arg_value = replace_lookups(arg, scope)
+        if arg_value.eval_type() == Char
+          value = arg_value.evaluate().chr()
+          puts value
+        else
+          puts arg_value.evaluate()
+        end
+      end
+      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
+      return
+    end
 
     if node.is_a?(Variable) || node.is_a?(Reassign) || node.is_a?(ClassAttributeModification)
       value_name = node.is_a?(Variable) || node.is_a?(ClassAttributeModification) ? :@value : :@new_value
