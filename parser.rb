@@ -6,6 +6,7 @@ require "./types/function.rb"
 require "./types/class.rb"
 require "./types/conditional.rb"
 require "./types/iterator.rb"
+require "./types/list.rb"
 
 require "./operators/math.rb"
 require "./operators/logical.rb"
@@ -218,19 +219,40 @@ class CSMMParser
         Variable.new(type_class, name)
       }
       end
+
       rule :assignment_stmt do
+        match("List", "<", :type, ">", :ID, "=", :list_instanciation) do |_, _, type_class, _, name, _, values| 
+          puts "List type: #{type_class}"
+          puts "List name: #{name}"
+          puts "List values: #{values}"
+          list_instance = ListType.new(type_class).new_instance(values)
+          Variable.new(type_class, name, list_instance)
+        end
+
         match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
           Variable.new(type_class, name, value)
         end
       end
+
       rule :reassignment do
         match(:ID, "=", :logical_expr) do |name, _, value| 
           Reassign.new(name, value)
         end
 
+        # TODO: Add list reassignment
+        # match(:ID, "=", :list_instanciation) do |name, _, values| 
+        #   Reassign.new(name, values)
+        # end
+
         # Class attribute modification
         match(:ID, ".", :ID, "=", :logical_expr) do | class_name, _, attribute_name, _, value |
           ClassAttributeModification.new(class_name, attribute_name, value)
+        end
+      end
+
+      rule :list_instanciation do
+        match("[", :opt_arg_list, "]") do | _, elements, _ |
+          elements
         end
       end
 

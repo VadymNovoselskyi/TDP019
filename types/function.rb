@@ -50,8 +50,8 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    # puts "handling executable of type: #{node.class}"
-    # puts "node: #{node}", "\n"
+    puts "handling executable of type: #{node.class}"
+    puts "node: #{node}", "\n"
 
     if node.is_a?(Variable) || node.is_a?(Reassign) || node.is_a?(ClassAttributeModification)
       value_name = node.is_a?(Variable) || node.is_a?(ClassAttributeModification) ? :@value : :@new_value
@@ -242,7 +242,7 @@ class FunctionScope
   def set(key, value)
     if @scope.has_key?(key)
       @scope[key].reassign(value)
-    elsif @callee.get_attribute(key, "inside")
+    elsif @callee.has_attribute(key, "inside")
       @callee.get_attribute(key, "inside").reassign(value)
     else
       @scope[key] = value

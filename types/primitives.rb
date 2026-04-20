@@ -1,4 +1,6 @@
 require "./base.rb"
+require "./types/class.rb"
+require "./types/list.rb"
 
 def get_primitive_node(node)
   value = node.evaluate()
@@ -8,7 +10,7 @@ def get_primitive_node(node)
     return Bool.new(value)
   elsif value.is_a?(String) && value.length == 1
     return Char.new(value)
-  elsif value.is_a?(ClassInstanceType)
+  elsif value.is_a?(ClassInstanceType) || value.is_a?(ListInstance)
     return value
   else
     raise "Unsupported primitive type: #{value.class}"

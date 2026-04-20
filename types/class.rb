@@ -42,6 +42,10 @@ class ClassType
    instance = new_instance()
    return instance.run_function("main", []).evaluate()
  end
+
+ def get_class_name()
+  return @name
+ end
 end
 
 class ClassInstanceType 
@@ -70,14 +74,36 @@ class ClassInstanceType
    end
 
    for variable in member_variables
-     # TODO!! Check copy stuff
      @variable_scope[variable.access_attr.to_sym][variable.name] = variable
    end
 
    for function in member_functions
-     # TODO!! Check copy stuff
      @function_scope[function.access_attr.to_sym][function.name] = function
    end
+ end
+
+ def has_attribute(name, callee = "outside")
+  if (@variable_scope[:public][name] != nil)
+    return true
+  end 
+
+  if (callee == "inside" || callee == "subclass")
+    if (@variable_scope[:protected][name] != nil)
+      return true
+    end
+  end
+
+  if (callee == "inside")
+    if (@variable_scope[:private][name] != nil)
+      return true
+    end
+  end
+
+  if (@super != nil)
+    return @super.has_attribute(name)
+  end
+  
+  return false
  end
 
 # calle can be "outside" "inside" or "subclass"
@@ -103,8 +129,7 @@ class ClassInstanceType
      return @super.get_attribute(name, callee == "outside" ? "outside" : "subclass")
    end
 
-   return nil
-  #  raise "Class #{@class_name} doesn't have a variable named: #{name}"
+   raise "Class #{@class_name} doesn't have a variable named: #{name}"
    
  end
 
@@ -132,6 +157,7 @@ class ClassInstanceType
     @super.set_attribute(name, value, "subclass")
     return
   end
+
   raise "Class #{@class_name} doesn't have a variable named: #{name}"
  end
 
@@ -155,12 +181,27 @@ class ClassInstanceType
      return @super.run_function(name, args, "subclass")
    end
 
-   
    raise "Class #{@class_name} doesn't have a function named: #{name}"
+ end
+
+ def eval_type()
+  return self.class
  end
 
  def evaluate()
   return self
+ end
+
+ def is_subclass_of(class_name)
+  if (@class_name == class_name)
+    return true
+  end
+
+  if (@super != nil)
+    return @super.is_subclass_of(class_name)
+  end
+
+  return false
  end
 end
 
