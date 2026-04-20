@@ -46,8 +46,20 @@ class ListInstance
     @elements << element
   end
 
+  def get_element(index)
+    return @elements[index]
+  end
+
+  def get_elements()
+    return @elements
+  end
+
   def evaluate()
     return self
   end 
+
+  def eval_type()
+    return self.class
+  end
 
 end

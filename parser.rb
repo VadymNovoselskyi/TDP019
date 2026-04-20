@@ -235,8 +235,8 @@ class CSMMParser
           # puts "List type: #{type_class}"
           # puts "List name: #{name}"
           # puts "List values: #{values}"
-          list_instance = ListType.new(type_class).new_instance(values.reverse())
-          Variable.new(type_class, name, list_instance)
+          list_type = ListType.new(type_class)
+          Variable.new(list_type, name, list_type.new_instance(values.reverse()))
         end
 
         match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
@@ -321,6 +321,8 @@ class CSMMParser
         match(:class_method_call)
         match(:class_attribute_access)
 
+        match(:list_access)
+
         match(:function_call)
         match(:literal)
       end
@@ -342,6 +344,12 @@ class CSMMParser
       rule :class_method_call do
         match(:ID, ".", :ID, "(", :opt_arg_list, ")") do | class_name, _, method_name, _, args, _ |
           ClassMethodCall.new(class_name, method_name, args)
+        end
+      end
+
+      rule :list_access do
+        match(:ID, "[", :logical_expr, "]") do | list_name, _, index, _ |
+          ListAccess.new(list_name, index)
         end
       end
 

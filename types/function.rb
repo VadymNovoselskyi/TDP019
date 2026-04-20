@@ -55,17 +55,27 @@ class Function < BaseNode
     puts "node: #{node}", "\n"
 
     if node.is_a?(WriteLine)
+      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
       if node.evaluate().length == 0
         puts ""
         return
       end
 
-      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
       for arg in node.evaluate()
         arg_value = replace_lookups(arg, scope)
+        puts "WriteLine argument value: #{arg_value.eval_type()}"
         if arg_value.eval_type() == Char
           value = arg_value.evaluate().chr()
           puts value
+        elsif arg_value.eval_type().class == ListType
+          list_str = "["
+          puts "Evaluating list for WriteLine: #{arg_value.class}"
+          for element in arg_value.evaluate().get_elements()
+            element_value = replace_lookups(element, scope)
+            list_str += element_value.evaluate().to_s + ", "
+          end
+          list_str += "]"
+          puts list_str
         else
           puts arg_value.evaluate()
         end

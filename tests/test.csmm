@@ -3,7 +3,7 @@ class Program {
         int hello = 10 + 2;
         char a = 'a';
         List<int> n = [1,2,3];
-        WriteLine(a + 10);
+        WriteLine(n);
         return 0;   
     }
 }
