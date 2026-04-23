@@ -35,17 +35,14 @@ class ClassType
    @member_functions = member_functions
  end
 
-  #  TODO: add args
- def new_instance()
-   puts "Creating new instance of class #{@name}"
-   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor)
+ def new_instance(args = [])
+   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args)
  end
 
  def evaluate()
    if (name != "Program")
      raise "Cant evaluate cass type definition of class #{name}"
    end
-   puts "Evaluating Program class"
    instance = new_instance()
    return instance.run_function("main", []).evaluate()
  end
@@ -58,9 +55,9 @@ end
 class ClassInstantiation 
   attr_accessor :class_type
 
-  # TODO: add args
-  def initialize(class_type)
+  def initialize(class_type, args = [])
     @class_type = class_type
+    @args = args
   end
 
   def eval_type()
@@ -68,7 +65,7 @@ class ClassInstantiation
   end
 
   def evaluate()
-    return @class_type.new_instance()
+    return @class_type.new_instance(@args)
   end
 
   def clone()
@@ -77,7 +74,7 @@ class ClassInstantiation
 end
 
 class ClassInstanceType 
- def initialize(member_variables, member_functions, class_name, constructor, super_class = nil)
+ def initialize(member_variables, member_functions, class_name, constructor, args, super_class = nil)
    @class_name = class_name
    @constructor = constructor
    @super = super_class
@@ -103,11 +100,8 @@ class ClassInstanceType
    end
 
    for variable in member_variables
-    puts "Adding variable #{variable.name} to class #{@class_name} with access modifier #{variable.access_attr}", variable, variable.eval_type()
-     if variable.eval_type() == ClassInstantiation
-      puts "Evaluating variable #{variable.name} of class #{@class_name}"
+     if variable.value && variable.value.eval_type() == ClassInstantiation
        variable.value = variable.value.evaluate()
-       puts "Variable #{variable.name} of class #{@class_name} evaluated to #{variable.value}"
      end
      @variable_scope[variable.access_attr.to_sym][variable.name] = variable
    end
@@ -117,7 +111,7 @@ class ClassInstanceType
    end
 
    if (@constructor != nil)
-     @constructor.evaluate(self, [])
+     @constructor.evaluate(self, args)
    end
  end
 

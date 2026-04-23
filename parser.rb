@@ -337,10 +337,7 @@ class CSMMParser
 
       rule :class_instantiation do
         match("new", :class_type, "(", :opt_arg_list, ")") do | _, class_type, _, args, _ |
-          # TODO: add args
-          # puts "Class type: #{class_type}"
-          # class_type.new_instance()
-          ClassInstantiation.new(class_type)
+          ClassInstantiation.new(class_type, args)
         end
       end
 

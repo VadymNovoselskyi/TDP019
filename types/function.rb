@@ -51,38 +51,11 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    puts "handling executable of type: #{node.class}"
-    puts "node: #{node}", "\n"
-
-    if node.is_a?(WriteLine)
-      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
-      if node.evaluate().length == 0
-        puts ""
-        return
-      end
-
-      for arg in node.evaluate()
-        arg_value = replace_lookups(arg, scope)
-        if arg_value.eval_type() == Char
-          value = arg_value.evaluate().chr()
-          puts value
-        elsif arg_value.eval_type() == ListInstance
-          vals = []
-          for element in arg_value.evaluate().get_elements()
-            element_value = replace_lookups(element, scope)
-            vals << element_value.evaluate().to_s()
-          end
-          puts "[#{vals.join(", ")}]"
-        else
-          puts arg_value.evaluate()
-        end
-      end
-      puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
-      return
-    end
+    # puts "handling executable of type: #{node.class}"
+    # puts "node: #{node}", "\n"
 
     if node.is_a?(Variable) && node.eval_type() == ClassInstantiation
-      puts "Handling class instantiation for variable '#{node.name}'"
+      puts "Handling class instantiation for variable '#{node.name}'\n\n"
       class_instance = node.evaluate()
       node.instance_variable_set(:@value, class_instance)
       scope.set(node.name, node)
@@ -172,6 +145,31 @@ class Function < BaseNode
       end
       return
     end
+
+    if node.is_a?(WriteLine)
+      if node.evaluate().length == 0
+        puts "#{get_write_line_prefix()}"
+        return
+      end
+
+      for arg in node.evaluate()
+        arg_value = replace_lookups(arg, scope)
+        if arg_value.eval_type() == Char
+          value = arg_value.evaluate().chr()
+          puts "#{get_write_line_prefix()} #{value}"
+        elsif arg_value.eval_type() == ListInstance
+          vals = []
+          for element in arg_value.evaluate().get_elements()
+            element_value = replace_lookups(element, scope)
+            vals << element_value.evaluate().to_s()
+          end
+          puts "#{get_write_line_prefix()} [#{vals.join(", ")}]"
+        else
+          puts "#{get_write_line_prefix()} #{arg_value.evaluate()}" 
+        end
+      end
+      return
+    end
     
     if node.is_a?(ReturnNode)
       # puts "ReturnNode: #{node.inspect}"
@@ -183,6 +181,10 @@ class Function < BaseNode
       # puts "root: #{root.inspect}"
       return root
     end
+  end
+
+  def get_write_line_prefix()
+    return "\e[38;2;0;128;0m[WriteLine]:\e[0m"
   end
 
   def replace_lookups(node, scope)
@@ -250,9 +252,9 @@ end
 
 class FunctionScope 
   def initialize(callee, args, name)
-    puts "callee: #{callee}"
-    puts "args: #{args}"
-    puts "name: #{name}"
+    # puts "callee: #{callee}"
+    # puts "args: #{args}"
+    # puts "name: #{name}"
 
     @callee = callee
     @scope = {}
