@@ -51,8 +51,8 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    # puts "handling executable of type: #{node.class}"
-    # puts "node: #{node}", "\n"
+    puts "handling executable of type: #{node.class}"
+    puts "node: #{node}", "\n"
 
     if node.is_a?(WriteLine)
       puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
@@ -78,6 +78,14 @@ class Function < BaseNode
         end
       end
       puts ">>>>>>>>>>>WriteLine<<<<<<<<<<"
+      return
+    end
+
+    if node.is_a?(Variable) && node.eval_type() == ClassInstantiation
+      puts "Handling class instantiation for variable '#{node.name}'"
+      class_instance = node.evaluate()
+      node.instance_variable_set(:@value, class_instance)
+      scope.set(node.name, node)
       return
     end
 

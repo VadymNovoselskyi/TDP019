@@ -1,7 +1,8 @@
 class TestTest {
     public int pub_var;
 
-    public int init() {
+    public TestTest() {
+        WriteLine('x');
         pub_var = 10;
     }
 
@@ -15,11 +16,9 @@ class Test {
     protected int prot_var;
     private int priv_var;
 
-    public TestTest var;
+    public TestTest var = new TestTest();
 
     public void hidden_func() {
-        var = new TestTest();
-        var.init();
         WriteLine(var.pub_var);
         pub_var = 14;
     }

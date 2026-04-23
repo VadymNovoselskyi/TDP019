@@ -83,22 +83,30 @@ class CSMMParser
 
       rule :member_decl do 
         match(:field_decl)
+        match(:constructor_decl)
         match(:method_decl)
       end
 
-      # TODO: Maybe be able to assign, not just declare?
       rule :field_decl do
-        match(:access_modifier, :type, :ID, ";") do |access, type_class, name, _|  
-          ClassVariable.new(type_class, name, access)
+        match(:access_modifier, :assignment) do |access, variable|  
+          ClassVariable.new(variable, access)
         end 
       end
       
+      rule :constructor_decl do
+        match("public", :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") {      
+          | access, class_name, _, params, _,  _, stmt_list, _ |
+          Function.new(access, class_name, class_name, params, stmt_list.reverse())
+        }
+      end
+
       rule :method_decl do 
         match(:access_modifier, :type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
           | access, type, id , _, params, _,  _, stmt_list, _ |
           Function.new(access, type, id, params, stmt_list.reverse())
         }
       end
+
 
       rule :access_modifier do
         match("public")
@@ -231,7 +239,7 @@ class CSMMParser
       end
 
       rule :assignment_stmt do
-        match("List", "<", :type, ">", :ID, "=", :list_instanciation) do |_, _, type_class, _, name, _, values| 
+        match("List", "<", :type, ">", :ID, "=", :list_instantiation) do |_, _, type_class, _, name, _, values| 
           # puts "List type: #{type_class}"
           # puts "List name: #{name}"
           # puts "List values: #{values}"
@@ -252,7 +260,7 @@ class CSMMParser
         end
 
         # TODO: Add list reassignment
-        # match(:ID, "=", :list_instanciation) do |name, _, values| 
+        # match(:ID, "=", :list_instantiation) do |name, _, values| 
         #   Reassign.new(name, values)
         # end
 
@@ -262,7 +270,7 @@ class CSMMParser
         end
       end
 
-      rule :list_instanciation do
+      rule :list_instantiation do
         match("[", :opt_arg_list, "]") do | _, elements, _ |
           elements
         end
@@ -317,7 +325,7 @@ class CSMMParser
       rule :factor do
         match('(', :logical_expr, ')') {|_, a, _| a }
 
-        match(:class_instanciation)
+        match(:class_instantiation)
         match(:class_method_call)
         match(:class_attribute_access)
 
@@ -327,11 +335,12 @@ class CSMMParser
         match(:literal)
       end
 
-      rule :class_instanciation do
+      rule :class_instantiation do
         match("new", :class_type, "(", :opt_arg_list, ")") do | _, class_type, _, args, _ |
           # TODO: add args
           # puts "Class type: #{class_type}"
-          class_type.new_instance()
+          # class_type.new_instance()
+          ClassInstantiation.new(class_type)
         end
       end
 

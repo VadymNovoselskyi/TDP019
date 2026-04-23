@@ -2,13 +2,14 @@ require "./types/variable.rb"
 
 class ClassVariable < Variable
   attr_accessor :access_attr
-  def initialize(type_class, name, access_attr)
-    super(type_class, name, nil)
+  def initialize(variable, access_attr)
+    super(variable.type_class, variable.name, variable.value)
+    @variable = variable
     @access_attr = access_attr
   end
 
   def clone()
-    return ClassVariable.new(@type_class, @name, @access_attr)
+    return ClassVariable.new(@variable, @access_attr)
   end
 end
 
@@ -16,11 +17,15 @@ class ClassType
   attr_accessor :name
  def initialize(name, member_declarations)
    @name = name
+   @constructor = nil
+
    member_variables = []
    member_functions = []
    for declaration in member_declarations
      if declaration.is_a?(ClassVariable)
        member_variables.append(declaration)
+     elsif declaration.is_a?(Function) && declaration.name == @name
+       @constructor = declaration
      elsif declaration.is_a?(Function)
        member_functions.append(declaration)
      end
@@ -32,13 +37,15 @@ class ClassType
 
   #  TODO: add args
  def new_instance()
-   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name)
+   puts "Creating new instance of class #{@name}"
+   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor)
  end
 
  def evaluate()
    if (name != "Program")
      raise "Cant evaluate cass type definition of class #{name}"
    end
+   puts "Evaluating Program class"
    instance = new_instance()
    return instance.run_function("main", []).evaluate()
  end
@@ -48,10 +55,32 @@ class ClassType
  end
 end
 
+class ClassInstantiation 
+  attr_accessor :class_type
+
+  # TODO: add args
+  def initialize(class_type)
+    @class_type = class_type
+  end
+
+  def eval_type()
+    return self.class
+  end
+
+  def evaluate()
+    return @class_type.new_instance()
+  end
+
+  def clone()
+    return ClassInstantiation.new(@class_type)
+  end
+end
+
 class ClassInstanceType 
- def initialize(member_variables, member_functions, class_name, super_class = nil)
-   @super = super_class
+ def initialize(member_variables, member_functions, class_name, constructor, super_class = nil)
    @class_name = class_name
+   @constructor = constructor
+   @super = super_class
 
    @variable_scope = {
      :public => {},
@@ -74,11 +103,21 @@ class ClassInstanceType
    end
 
    for variable in member_variables
+    puts "Adding variable #{variable.name} to class #{@class_name} with access modifier #{variable.access_attr}", variable, variable.eval_type()
+     if variable.eval_type() == ClassInstantiation
+      puts "Evaluating variable #{variable.name} of class #{@class_name}"
+       variable.value = variable.value.evaluate()
+       puts "Variable #{variable.name} of class #{@class_name} evaluated to #{variable.value}"
+     end
      @variable_scope[variable.access_attr.to_sym][variable.name] = variable
    end
 
    for function in member_functions
      @function_scope[function.access_attr.to_sym][function.name] = function
+   end
+
+   if (@constructor != nil)
+     @constructor.evaluate(self, [])
    end
  end
 
