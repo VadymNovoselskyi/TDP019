@@ -1,17 +1,5 @@
 require "./types/class.rb"
 
-class ListType
-  attr_reader :type
-
-  def initialize(type)
-    @type = type
-  end
-
-  def new_instance(elements = [])
-    return ListInstance.new(@type, elements)
-  end
-end
-
 class ListInstance
   attr_reader :type, :elements
 

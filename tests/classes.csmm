@@ -1,9 +1,26 @@
+class TestTest {
+    public int pub_var;
+
+    public int init() {
+        pub_var = 10;
+    }
+
+    public int triple(int res) {
+        return res * 3;
+    }
+}
+
 class Test {
     public int pub_var;
     protected int prot_var;
     private int priv_var;
 
+    public TestTest testTest;
+
     public void hidden_func() {
+        testTest = new TestTest();
+        testTest.init();
+        WriteLine(testTest.pub_var);
         pub_var = 14;
     }
 
@@ -22,6 +39,7 @@ class Program {
         int should_be_6 = test.double(3);
 
         test.hidden_func();
+        # WriteLine(test.testTest);
         test.pub_var = 100;
         return should_be_10 + should_be_6 + test.pub_var;
     }

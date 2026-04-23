@@ -203,6 +203,10 @@ class ClassInstanceType
 
   return false
  end
+
+ def to_s()
+  return "Instance of class #{@class_name}"
+ end
 end
 
 class ClassAttributeLookup < BaseNode

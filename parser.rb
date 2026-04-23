@@ -225,7 +225,7 @@ class CSMMParser
       
       rule :declaration do
         match(:type, :ID) { |type_class, name| 
-        puts "Declaring variable of type #{type_class} with name #{name}"
+        # puts "Declaring variable of type #{type_class} with name #{name}"
         Variable.new(type_class, name)
       }
       end
@@ -235,19 +235,19 @@ class CSMMParser
           # puts "List type: #{type_class}"
           # puts "List name: #{name}"
           # puts "List values: #{values}"
-          list_type = ListType.new(type_class)
-          Variable.new(list_type, name, list_type.new_instance(values.reverse()))
+          list = ListInstance.new(type_class, values.reverse())
+          Variable.new(ListInstance, name, list)
         end
 
         match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
-          puts "Assigning variable of type #{type_class} with name #{name} and value #{value}"
+          # puts "Assigning variable of type #{type_class} with name #{name} and value #{value}"
           Variable.new(type_class, name, value)
         end
       end
 
       rule :reassignment do
         match(:ID, "=", :logical_expr) do |name, _, value| 
-          puts "Reassigning variable with name #{name} to value #{value}"
+          # puts "Reassigning variable with name #{name} to value #{value}"
           Reassign.new(name, value)
         end
 
