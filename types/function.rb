@@ -51,8 +51,16 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    puts "handling executable of type: #{node.class}"
-    puts "node: #{node}", "\n"
+    # puts "handling executable of type: #{node.class}"
+    # puts "node: #{node}", "\n"
+
+    if node.is_a?(BreakNode) 
+      return {should_break: true}
+    end
+
+    if node.is_a?(ContinueNode)
+      return {should_continue: true}
+    end
 
     if node.is_a?(Variable) && node.eval_type() == ClassInstantiation
       puts "Handling class instantiation for variable '#{node.name}'\n\n"
@@ -96,8 +104,8 @@ class Function < BaseNode
     end
     
     if node.class < Iterable
-      puts "Handling iterable node: #{node}"
-      puts "Should run? #{node.get_condition()}", "\n"
+      # puts "Handling iterable node: #{node}"
+      # puts "Should run? #{node.get_condition()}", "\n"
       if node.is_a?(ForNode)
         # puts "ForNode initial block: #{node.initial_block}"
         handle_executable(node.initial_block, scope)
@@ -111,11 +119,17 @@ class Function < BaseNode
         # puts "Iter executables: #{iter_executables}"
 
         for executable in iter_executables do
-          # puts "--------------------------------"
-          # puts "executable before replace_lookups: #{executable.inspect}"
+          puts "--------------------------------"
+          puts "executable before replace_lookups: #{executable.inspect}"
           # replace_lookups(executable, scope)
-          # puts "executable after replace_lookups: #{executable.inspect}"
+          puts "executable after replace_lookups: #{executable.inspect}"
           result = handle_executable(executable, scope)
+          if (result.is_a?(Hash) && result[:should_break])
+            return
+          elsif (result.is_a?(Hash) && result[:should_continue])
+            break
+          end
+
           return result if result != nil
         end
 

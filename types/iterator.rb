@@ -69,3 +69,37 @@ class ForNode < Iterable
     return ForNode.new(@initial_block.clone(), @condition.clone(), @increment_block.clone(), @body.map(&:clone))
   end
 end
+
+class BreakNode < BaseNode
+  def initialize()
+  end
+
+  def eval_type()
+    return self.class
+  end
+
+  def evaluate()
+    return self
+  end
+
+  def clone()
+    return BreakNode.new()
+  end
+end
+
+class ContinueNode < BaseNode
+  def initialize()
+  end
+
+  def eval_type()
+    return self.class
+  end
+
+  def evaluate()
+    return self
+  end
+
+  def clone()
+    return ContinueNode.new()
+  end
+end

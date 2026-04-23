@@ -25,7 +25,9 @@ reserved_words = [
   "private",
   "protected",
   "new",
-  "WriteLine"
+  "WriteLine",
+  "break",
+  "continue"
 ]
 $id_regex = /^(?!#{reserved_words.join('|')})\w+/
 
@@ -229,6 +231,9 @@ class CSMMParser
         match(:declaration, ";")
         match(:assignment_stmt, ";")
         match(:reassignment, ";")
+        
+        match("break", ";") { BreakNode.new() }
+        match("continue", ";") { ContinueNode.new() }
       end
       
       rule :declaration do
