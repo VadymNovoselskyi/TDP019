@@ -51,8 +51,8 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    # puts "handling executable of type: #{node.class}"
-    # puts "node: #{node}", "\n"
+    puts "handling executable of type: #{node.class}"
+    puts "node: #{node}", "\n"
 
     if node.is_a?(Variable) && node.eval_type() == ClassInstantiation
       puts "Handling class instantiation for variable '#{node.name}'\n\n"
@@ -153,7 +153,9 @@ class Function < BaseNode
       end
 
       for arg in node.evaluate()
+        puts "arg before replace_lookups: #{arg.inspect}"
         arg_value = replace_lookups(arg, scope)
+        puts "arg_value after replace_lookups: #{arg_value.inspect}"
         if arg_value.eval_type() == Char
           value = arg_value.evaluate().chr()
           puts "#{get_write_line_prefix()} #{value}"
@@ -210,9 +212,10 @@ class Function < BaseNode
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
-      # puts "Before ClassMethodCall: #{node}"
-      class_method_value = scope.run_class_method(node.variable_name, node.name, node.args)
-      # puts "After ClassMethodCall: #{class_method_value}"
+      puts "Before ClassMethodCall: #{node}"
+      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      class_method_value = scope.run_class_method(node.variable_name, node.name, new_args)
+      puts "After ClassMethodCall: #{class_method_value}"
       return class_method_value
     end
 

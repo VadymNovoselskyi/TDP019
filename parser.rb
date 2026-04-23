@@ -355,7 +355,7 @@ class CSMMParser
 
       rule :list_access do
         match(:ID, "[", :logical_expr, "]") do | list_name, _, index, _ |
-          ListAccess.new(list_name, index)
+          ClassMethodCall.new(list_name, "At", index)
         end
       end
 

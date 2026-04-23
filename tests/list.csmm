@@ -1,0 +1,23 @@
+class Program {
+
+    public int test(int a) {
+        return a;
+    }
+
+    public int main() {
+        List<int> list = [1, 2, 3, 4];
+        list.Add(69);
+        WriteLine(list);
+        WriteLine(list.Count);
+        WriteLine(list.At(list.Count - 1));
+        # list.Clear();
+        # WriteLine(list.Count);
+        WriteLine(list);
+        list.DeleteAt(1);
+        list.DeleteAt(2);
+        WriteLine(list);
+        int a = list.At(1);
+        WriteLine(a);
+        return 1;
+    }
+}
