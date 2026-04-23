@@ -11,6 +11,10 @@ class Variable < BaseNode
   end
   
   def reassign(new_value)
+    if (@type_class.class == ClassType && new_value.evaluate().is_subclass_of(@type_class.get_class_name()))
+      @value = new_value.evaluate()
+      return
+    end
     if (new_value.eval_type() != @type_class)
       raise "Trying to assign #{new_value.eval_type()} to a variablel of type #{@type_class}"
     end

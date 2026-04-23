@@ -257,8 +257,8 @@ class CSMMParser
         # end
 
         # Class attribute modification
-        match(:ID, ".", :ID, "=", :logical_expr) do | class_name, _, attribute_name, _, value |
-          ClassAttributeModification.new(class_name, attribute_name, value)
+        match(:ID, ".", :ID, "=", :logical_expr) do | variable_name, _, attribute_name, _, value |
+          ClassAttributeModification.new(variable_name, attribute_name, value)
         end
       end
 
@@ -336,14 +336,14 @@ class CSMMParser
       end
 
       rule :class_attribute_access do
-        match(:ID, ".", :ID) do | class_name, _, attribute_name |
-          ClassAttributeLookup.new(class_name, attribute_name)
+        match(:ID, ".", :ID) do | variable_name, _, attribute_name |
+          ClassAttributeLookup.new(variable_name, attribute_name)
         end
       end
 
       rule :class_method_call do
-        match(:ID, ".", :ID, "(", :opt_arg_list, ")") do | class_name, _, method_name, _, args, _ |
-          ClassMethodCall.new(class_name, method_name, args)
+        match(:ID, ".", :ID, "(", :opt_arg_list, ")") do | variable_name, _, method_name, _, args, _ |
+          ClassMethodCall.new(variable_name, method_name, args)
         end
       end
 

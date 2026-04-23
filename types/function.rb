@@ -96,7 +96,7 @@ class Function < BaseNode
       end
 
       if node.is_a?(ClassAttributeModification)
-        scope.set_attribute(node.class_name, node.name, node_value)
+        scope.set_attribute(node.variable_name, node.name, node_value)
       else
         scope.set(node.name, node)
       end
@@ -110,7 +110,7 @@ class Function < BaseNode
 
     if node.is_a?(ClassMethodCall)
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      scope.run_class_method(node.class_name, node.name, new_args)
+      scope.run_class_method(node.variable_name, node.name, new_args)
       return 
     end
     
@@ -196,12 +196,12 @@ class Function < BaseNode
       return function_call_value
     elsif node.is_a?(ClassAttributeLookup)
       # puts "Before ClassAttributeLookup: #{node}"
-      class_attribute_value = scope.get_attribute(node.class_name, node.name)
+      class_attribute_value = scope.get_attribute(node.variable_name, node.name)
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
       # puts "Before ClassMethodCall: #{node}"
-      class_method_value = scope.run_class_method(node.class_name, node.name, node.args)
+      class_method_value = scope.run_class_method(node.variable_name, node.name, node.args)
       # puts "After ClassMethodCall: #{class_method_value}"
       return class_method_value
     end
@@ -242,9 +242,9 @@ end
 
 class FunctionScope 
   def initialize(callee, args, name)
-    # puts "callee: #{callee}"
-    # puts "args: #{args}"
-    # puts "name: #{name}"
+    puts "callee: #{callee}"
+    puts "args: #{args}"
+    puts "name: #{name}"
 
     @callee = callee
     @scope = {}
@@ -281,27 +281,48 @@ class FunctionScope
     return @callee.run_function(name, args, "inside")
   end
 
-  def get_attribute(class_name, name)
-    if !@scope.has_key?(class_name)
-      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+  def get_attribute(variable_name, name)
+    if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
+      raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
-    class_instance = @scope[class_name].value
+    class_instance = nil
+    if @scope.has_key?(variable_name)
+      class_instance = @scope[variable_name].value
+    elsif @callee.has_attribute(variable_name, "inside")
+      class_instance = @callee.get_attribute(variable_name, "inside").value
+    end
+
     return class_instance.get_attribute(name, "outside")
   end
 
-  def set_attribute(class_name, name, value)
-    if !@scope.has_key?(class_name)
-      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+  def set_attribute(variable_name, name, value)
+    if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
+      raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
-    class_instance = @scope[class_name].value
+
+    class_instance = nil
+    if @scope.has_key?(variable_name)
+      class_instance = @scope[variable_name].value
+    elsif @callee.has_attribute(variable_name, "inside")
+      class_instance = @callee.get_attribute(variable_name, "inside").value
+    end
+
     class_instance.set_attribute(name, value)
   end
 
-  def run_class_method(class_name, name, args)
-    if !@scope.has_key?(class_name)
-      raise "Function '#{@name}' has no class instance named '#{class_name}' in the current context;"
+  def run_class_method(variable_name, name, args)
+    # puts "Running class method '#{name}' on variable '#{variable_name}' with args: #{args.inspect}"
+    if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
+      raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
-    class_instance = @scope[class_name].value
+
+    class_instance = nil
+    if @scope.has_key?(variable_name)
+      class_instance = @scope[variable_name].value
+    elsif @callee.has_attribute(variable_name, "inside")
+      class_instance = @callee.get_attribute(variable_name, "inside").value
+    end
+
     return class_instance.run_function(name, args, "outside")
   end
 end

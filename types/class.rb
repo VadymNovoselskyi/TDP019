@@ -210,10 +210,10 @@ class ClassInstanceType
 end
 
 class ClassAttributeLookup < BaseNode
-  attr_accessor :class_name, :name
+  attr_accessor :variable_name, :name
 
-  def initialize(class_name, name)
-    @class_name = class_name
+  def initialize(variable_name, name)
+    @variable_name = variable_name
     @name = name
   end
 
@@ -226,15 +226,15 @@ class ClassAttributeLookup < BaseNode
   end
 
   def clone()
-    return ClassAttributeLookup.new(@class_name, @name)
+    return ClassAttributeLookup.new(@variable_name, @name)
   end
 end
 
 class ClassAttributeModification < BaseNode
-  attr_accessor :class_name, :name, :value
+  attr_accessor :variable_name, :name, :value
 
-  def initialize(class_name, name, value)
-    @class_name = class_name
+  def initialize(variable_name, name, value)
+    @variable_name = variable_name
     @name = name
     @value = value
   end
@@ -248,15 +248,15 @@ class ClassAttributeModification < BaseNode
   end
 
   def clone()
-    return ClassAttributeModification.new(@class_name, @name, @value.clone())
+    return ClassAttributeModification.new(@variable_name, @name, @value.clone())
   end
 end
 
 class ClassMethodCall < BaseNode
-  attr_accessor :class_name, :name, :args
+  attr_accessor :variable_name, :name, :args
 
-  def initialize(class_name, name, args)
-    @class_name = class_name
+  def initialize(variable_name, name, args)
+    @variable_name = variable_name
     @name = name
     @args = args
   end  
@@ -270,6 +270,6 @@ class ClassMethodCall < BaseNode
   end
 
   def clone()
-    return ClassMethodCall.new(@class_name, @name, @args.map(&:clone))
+    return ClassMethodCall.new(@variable_name, @name, @args.map(&:clone))
   end
 end
