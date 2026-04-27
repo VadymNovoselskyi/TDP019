@@ -119,10 +119,10 @@ class Function < BaseNode
         # puts "Iter executables: #{iter_executables}"
 
         for executable in iter_executables do
-          puts "--------------------------------"
-          puts "executable before replace_lookups: #{executable.inspect}"
+          # puts "--------------------------------"
+          # puts "executable before replace_lookups: #{executable.inspect}"
           # replace_lookups(executable, scope)
-          puts "executable after replace_lookups: #{executable.inspect}"
+          # puts "executable after replace_lookups: #{executable.inspect}"
           result = handle_executable(executable, scope)
           if (result.is_a?(Hash) && result[:should_break])
             return
@@ -167,9 +167,7 @@ class Function < BaseNode
       end
 
       for arg in node.evaluate()
-        puts "arg before replace_lookups: #{arg.inspect}"
         arg_value = replace_lookups(arg, scope)
-        puts "arg_value after replace_lookups: #{arg_value.inspect}"
         if arg_value.eval_type() == Char
           value = arg_value.evaluate().chr()
           puts "#{get_write_line_prefix()} #{value}"
@@ -188,13 +186,11 @@ class Function < BaseNode
     end
     
     if node.is_a?(ReturnNode)
-      # puts "ReturnNode: #{node.inspect}"
       root = replace_lookups(node, scope)
       if root.eval_type() != @return_type
         raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
       end
 
-      # puts "root: #{root.inspect}"
       return root
     end
   end

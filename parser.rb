@@ -70,9 +70,19 @@ class CSMMParser
       end
 
       rule :class_decl do
-         match("class", :ID, "{", :member_decls, "}") do |_, class_name, _, decls, _ | 
+        match("class", :ID, "{", :member_decls, "}") do |_, class_name, _, decls, _ | 
           @@class_types[class_name] = ClassType.new(class_name, decls)
           @@class_types[class_name]
+        end
+        match("class", :ID, :class_inheritance_decl, "{", :member_decls, "}") do |_, class_name, super_class, _, decls, _ | 
+          @@class_types[class_name] = ClassType.new(class_name, decls, super_class)
+          @@class_types[class_name]
+        end
+      end
+
+      rule :class_inheritance_decl do
+        match(":", :ID) do | _, super_class_name |
+          @@class_types[super_class_name]
         end
       end
 
@@ -97,9 +107,19 @@ class CSMMParser
       
       rule :constructor_decl do
         match("public", :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") {      
-          | access, class_name, _, params, _,  _, stmt_list, _ |
-          Function.new(access, class_name, class_name, params, stmt_list.reverse())
+          | access, class_name, _, params, _, _, stmt_list, _ |
+          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list.reverse()))
         }
+        match("public", :ID, "(", :opt_param_list, ")", :base_constructor_args,  "{", :stmt_list, "}") {      
+          | access, class_name, _, params, _, base_constructor_args, _, stmt_list, _ |
+          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list.reverse()), base_constructor_args.reverse())
+        }
+      end
+
+      rule :base_constructor_args do
+        match(":", "base", "(", :opt_arg_list, ")") do | _, _, _, args, _ |
+          args
+        end
       end
 
       rule :method_decl do 
@@ -238,29 +258,23 @@ class CSMMParser
       
       rule :declaration do
         match(:type, :ID) { |type_class, name| 
-        # puts "Declaring variable of type #{type_class} with name #{name}"
         Variable.new(type_class, name)
       }
       end
 
       rule :assignment_stmt do
         match("List", "<", :type, ">", :ID, "=", :list_instantiation) do |_, _, type_class, _, name, _, values| 
-          # puts "List type: #{type_class}"
-          # puts "List name: #{name}"
-          # puts "List values: #{values}"
           list = ListInstance.new(type_class, values.reverse())
           Variable.new(ListInstance, name, list)
         end
 
         match(:type, :ID, "=", :logical_expr) do |type_class, name, _, value|  
-          # puts "Assigning variable of type #{type_class} with name #{name} and value #{value}"
           Variable.new(type_class, name, value)
         end
       end
 
       rule :reassignment do
         match(:ID, "=", :logical_expr) do |name, _, value| 
-          # puts "Reassigning variable with name #{name} to value #{value}"
           Reassign.new(name, value)
         end
 

@@ -1,0 +1,39 @@
+class Test {
+    public int pub_var;
+    protected int prot_var;
+    private int priv_var;
+
+    public Test(int a) {
+        WriteLine(a);
+        pub_var = a;
+    }
+
+    private void hidden_func() {
+        pub_var = 14;
+    }
+}
+
+class TestTest : Test {
+    public TestTest(int a, int b) : base(a) {
+        WriteLine(a);
+        WriteLine(b);
+        pub_var = b;
+    }
+
+    public int triple(int res) {
+        return res * 3;
+    }
+}
+
+
+
+class Program {
+    private TestTest testTest = new TestTest(10, -10);
+    
+    public int main() {
+        testTest.pub_var = 20;
+        WriteLine(testTest.pub_var);
+        
+        return 1;
+    }
+}

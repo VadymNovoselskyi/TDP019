@@ -13,31 +13,60 @@ class ClassVariable < Variable
   end
 end
 
+class Constructor
+  attr_accessor :constructor, :base_constructor_call_args
+  def initialize(constructor, base_constructor_call_args = nil)
+    @constructor = constructor
+    @base_constructor_call_args = base_constructor_call_args
+  end
+
+  def eval_type()
+    raise "Tried to evaluate the type of a Constructor node"
+  end
+  
+  def evaluate(instance, args)
+    raise "Tried to evaluate a Constructor node" 
+  end
+end
+
 class ClassType
   attr_accessor :name
- def initialize(name, member_declarations)
-   @name = name
-   @constructor = nil
+  def initialize(name, member_declarations, super_class = nil)
+    @name = name
+    @super = super_class
 
-   member_variables = []
-   member_functions = []
-   for declaration in member_declarations
-     if declaration.is_a?(ClassVariable)
-       member_variables.append(declaration)
-     elsif declaration.is_a?(Function) && declaration.name == @name
-       @constructor = declaration
-     elsif declaration.is_a?(Function)
-       member_functions.append(declaration)
-     end
-   end
+    @constructor = nil
+    @base_constructor_call_args = nil
 
-   @member_variables = member_variables
-   @member_functions = member_functions
+    member_variables = []
+    member_functions = []
+    for declaration in member_declarations
+      if declaration.is_a?(ClassVariable)
+        member_variables.append(declaration)
+      elsif declaration.is_a?(Function)
+        member_functions.append(declaration)
+      elsif declaration.is_a?(Constructor)
+        # puts "constructor: #{declaration.constructor}"
+        # puts "base_constructor_call_args: #{declaration.base_constructor_call_args}"
+        @constructor = declaration.constructor
+        @base_constructor_call_args = declaration.base_constructor_call_args
+      end
+    end
+
+    @member_variables = member_variables
+    @member_functions = member_functions
  end
 
- def new_instance(args = [])
-   return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args)
- end
+  def new_instance(args = [])
+    puts "Creating new instance of class #{@name} with args: #{args}"
+    super_instance = nil
+    if (@super != nil)
+      puts "base_constructor_call_args: #{@base_constructor_call_args}"
+      puts "args: #{args}"
+      super_instance = @super.new_instance(@base_constructor_call_args != nil ? @base_constructor_call_args : [])
+    end
+    return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args, super_instance)
+  end
 
  def evaluate()
    if (name != "Program")
@@ -58,6 +87,7 @@ class ClassInstantiation
   def initialize(class_type, args = [])
     @class_type = class_type
     @args = args
+    puts "Initialized ClassInstantiation with class_type: #{class_type.name} and args: #{@args}"
   end
 
   def eval_type()
@@ -65,6 +95,7 @@ class ClassInstantiation
   end
 
   def evaluate()
+    puts "Evaluating ClassInstantiation of class #{@class_type.name} with args: #{@args}"
     return @class_type.new_instance(@args)
   end
 
@@ -131,9 +162,10 @@ class ClassInstanceType
       return true
     end
   end
+     puts "Superclass: #{@super.class_name if @super != nil}"
 
   if (@super != nil)
-    return @super.has_attribute(name)
+    return @super.has_attribute(name, callee == "outside" ? "outside" : "subclass")
   end
   
   return false
