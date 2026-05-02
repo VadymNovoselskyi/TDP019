@@ -232,6 +232,10 @@ class Function < BaseNode
       class_method_value = scope.run_class_method(node.variable_name, node.name, new_args)
       puts "After ClassMethodCall: #{class_method_value}"
       return class_method_value
+    elsif node.is_a?(ClassInstantiation)
+      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      class_instantiation_value = node.class_type.new_instance(new_args)
+      return class_instantiation_value
     end
 
     if (node.instance_variables.include?(:@lhs))

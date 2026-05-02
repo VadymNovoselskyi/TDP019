@@ -1,0 +1,21 @@
+class Test {
+    private int priv_var;
+
+    public Test(int ip_a) {
+        priv_var = ip_a;
+    }
+
+    public void print() {
+        WriteLine(priv_var);
+    }
+}
+
+class Program {
+    public int main() {
+        int a = 20;
+        Test test = new Test(a);
+        test.print();
+        
+        return 1;
+    }
+}

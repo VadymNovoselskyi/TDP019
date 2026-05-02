@@ -61,11 +61,8 @@ class ClassType
  end
 
   def new_instance(args = [])
-    puts "Creating new instance of class #{@name} with args: #{args}"
     super_instance = nil
     if (@super != nil)
-      puts "base_constructor_call_args: #{@base_constructor_call_args}"
-      puts "args: #{args}"
       super_instance = @super.new_instance(@base_constructor_call_args != nil ? @base_constructor_call_args : [])
     end
     return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args, super_instance)
@@ -85,7 +82,7 @@ class ClassType
 end
 
 class ClassInstantiation 
-  attr_accessor :class_type
+  attr_accessor :class_type, :args
 
   def initialize(class_type, args = [])
     @class_type = class_type
@@ -163,7 +160,6 @@ class ClassInstanceType
       return true
     end
   end
-     puts "Superclass: #{@super.class_name if @super != nil}"
 
   if (@super != nil)
     return @super.has_attribute(name, callee == "outside" ? "outside" : "subclass")

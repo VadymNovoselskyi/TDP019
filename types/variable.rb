@@ -49,11 +49,11 @@ class VariableLookup < BaseNode
   end
 
   def eval_type()
-    raise "Tried to evaluate the type of a VariableLookup node"
+    raise "Tried to evaluate the type of a VariableLookup node #{@name}"
   end
 
   def evaluate()
-    raise "Tried to evaluate a VariableLookup node"
+    raise "Tried to evaluate a VariableLookup node #{@name}"
   end
 
   def clone()
