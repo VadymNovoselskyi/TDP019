@@ -90,7 +90,6 @@ class ClassInstantiation
   def initialize(class_type, args = [])
     @class_type = class_type
     @args = args
-    puts "Initialized ClassInstantiation with class_type: #{class_type.name} and args: #{@args}"
   end
 
   def eval_type()
@@ -98,12 +97,11 @@ class ClassInstantiation
   end
 
   def evaluate()
-    puts "Evaluating ClassInstantiation of class #{@class_type.name} with args: #{@args}"
     return @class_type.new_instance(@args)
   end
 
   def clone()
-    return ClassInstantiation.new(@class_type)
+    return ClassInstantiation.new(@class_type, @args.map(&:clone))
   end
 end
 
