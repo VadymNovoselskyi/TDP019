@@ -32,6 +32,11 @@ class Function < BaseNode
   def evaluate(callee, args = [])
     # puts "Evaluating function '#{@name}' with args: #{args.inspect}"
     clone_args = @args.map(&:clone)
+
+    if args.length != clone_args.length
+      raise "Invalid number of arguments for function '#{@name}'. Expected #{@args.length}, received #{args.length}"
+    end
+
     for arg, expected_arg in args.zip(clone_args) do
       if arg.eval_type() != expected_arg.eval_type()
         raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()}"
