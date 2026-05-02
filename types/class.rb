@@ -49,6 +49,9 @@ class ClassType
         # puts "constructor: #{declaration.constructor}"
         # puts "base_constructor_call_args: #{declaration.base_constructor_call_args}"
         @constructor = declaration.constructor
+        if (@constructor != nil && @constructor.name != @name)
+          raise "Constructor name #{@constructor.name} does not match class name #{@name}"
+        end
         @base_constructor_call_args = declaration.base_constructor_call_args
       end
     end
