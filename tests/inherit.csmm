@@ -3,37 +3,54 @@ class Test {
     protected int prot_var;
     private int priv_var;
 
-    public Test(int a) {
-        WriteLine(a);
-        pub_var = a;
+    public Test(int c) {
+        WriteLine('1');
+        WriteLine('c');
+        WriteLine(c);
+        pub_var = c;
     }
 
     private void hidden_func() {
         pub_var = 14;
     }
+
+    protected int double() {
+        return prot_var  * 2;
+    }
 }
 
 class TestTest : Test {
-    public TestTest(int a, int b) : base(a) {
+    public TestTest(int a, int b): base(a) {
+        WriteLine('2');
+        WriteLine('a');
         WriteLine(a);
-        WriteLine(b);
-        pub_var = b;
+        prot_var = b;
     }
 
-    public int triple(int res) {
-        return res * 3;
+    public int triple() {
+        return double() + prot_var;
+    }
+}
+
+class TestTestTest : TestTest {
+    public TestTestTest(int a, int b, int c) : base(a, b) {
+        WriteLine('3');
+        WriteLine('a');
+        WriteLine(a);
+        WriteLine('b');
+        WriteLine(b);
+        WriteLine('c');
+        WriteLine(c);
     }
 }
 
 
 
-class Program {
-    private TestTest testTest = new TestTest(10, -10);
-    
+class Program {    
     public int main() {
-        testTest.pub_var = 20;
-        WriteLine(testTest.pub_var);
-        
+        TestTestTest testTestTest = new TestTestTest(20, 30, 40);
+        WriteLine('t');
+        WriteLine(testTestTest.triple());
         return 1;
     }
 }

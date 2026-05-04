@@ -64,7 +64,7 @@ class CSMMParser
 
       rule :class_decls do
        match(:class_decl, :class_decls) do | decl, decls |
-          decls.append(decl)
+          decls.unshift(decl)
         end
        match(:empty) { [] }
       end
@@ -88,7 +88,7 @@ class CSMMParser
 
       rule :member_decls do
         match(:member_decl, :member_decls) do | decl, decls |
-          decls.append(decl)
+          decls.unshift(decl)
         end
         match(:empty) { []}
       end
@@ -108,11 +108,11 @@ class CSMMParser
       rule :constructor_decl do
         match("public", :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") {      
           | access, class_name, _, params, _, _, stmt_list, _ |
-          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list.reverse()))
+          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list))
         }
         match("public", :ID, "(", :opt_param_list, ")", :base_constructor_args,  "{", :stmt_list, "}") {      
           | access, class_name, _, params, _, base_constructor_args, _, stmt_list, _ |
-          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list.reverse()), base_constructor_args.reverse())
+          Constructor.new(Function.new(access, class_name, class_name, params, stmt_list), base_constructor_args)
         }
       end
 
@@ -125,7 +125,7 @@ class CSMMParser
       rule :method_decl do 
         match(:access_modifier, :type, :ID, "(", :opt_param_list, ")", "{", :stmt_list, "}") { 
           | access, type, id , _, params, _,  _, stmt_list, _ |
-          Function.new(access, type, id, params, stmt_list.reverse())
+          Function.new(access, type, id, params, stmt_list)
         }
       end
 
@@ -139,14 +139,14 @@ class CSMMParser
 
       rule :opt_param_list do
         match(:param, :param_list_tail) { | param, tail |
-          tail.append(param)
+          tail.unshift(param)
         }
         match(:empty) { [] }
       end
 
       rule :param_list_tail do
         match(",", :param, :param_list_tail) { | _, param, tail |
-          tail.append(param)
+          tail.unshift(param)
         }
         match(:empty) { [] }
       end
@@ -158,7 +158,7 @@ class CSMMParser
 
       rule :stmt_list do 
         match(:stmt, :stmt_list) { | stmt, stmt_list | 
-          stmt_list.append(stmt)
+          stmt_list.unshift(stmt)
         }
         match(:empty) { [] }
       end
@@ -190,11 +190,11 @@ class CSMMParser
 
       rule :conditional_stmt do
         match(:if_stmt, :opt_else_ifs, :opt_else) do | if_branch, else_if_branches, else_branch | 
-          Conditional.new(if_branch, else_if_branches.reverse(), else_branch)
+          Conditional.new(if_branch, else_if_branches, else_branch)
         end
         
         match(:if_stmt, :opt_else_ifs) do | if_branch, else_if_branches | 
-          Conditional.new(if_branch, else_if_branches.reverse())
+          Conditional.new(if_branch, else_if_branches)
         end
 
         match(:if_stmt) do | if_branch | 
@@ -204,13 +204,13 @@ class CSMMParser
 
       rule :if_stmt do
         match("if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, then_branch, _ |
-          ConditionalBranch.new(condition, then_branch.reverse())
+          ConditionalBranch.new(condition, then_branch)
         end
       end
 
       rule :opt_else_ifs do
         match(:else_if_stmt, :opt_else_ifs) do | else_if_branch, else_if_branches |
-          else_if_branches.append(else_if_branch)
+          else_if_branches.unshift(else_if_branch)
         end
 
         match(:empty) { [] }
@@ -218,13 +218,13 @@ class CSMMParser
 
       rule :else_if_stmt do
         match("else", "if", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, _, condition, _, _, else_if_branch, _ |
-          ConditionalBranch.new(condition, else_if_branch.reverse())
+          ConditionalBranch.new(condition, else_if_branch)
         end
       end
 
       rule :opt_else do
         match("else", "{", :stmt_list, "}") do | _, _, else_branch, _ | 
-          ConditionalBranch.new(Bool.new(true), else_branch.reverse())
+          ConditionalBranch.new(Bool.new(true), else_branch)
         end
         match(:empty) { nil }
       end
@@ -237,13 +237,13 @@ class CSMMParser
       rule :for_stmt do
         match("for", "(", :assignment_stmt, ";", :logical_expr, ";", :reassignment, ")", "{", :stmt_list, "}") { 
           | _, _, initial_block, _, condition, _, increment_block, _, _, body, _|
-          ForNode.new(initial_block, condition, increment_block, body.reverse())
+          ForNode.new(initial_block, condition, increment_block, body)
         }
       end
 
       rule :while_stmt do
         match("while", "(", :logical_expr, ")", "{", :stmt_list, "}") do | _, _, condition, _, _, body, _|
-          WhileNode.new(condition, body.reverse())
+          WhileNode.new(condition, body)
         end
       end
 
@@ -264,7 +264,7 @@ class CSMMParser
 
       rule :assignment_stmt do
         match("List", "<", :type, ">", :ID, "=", :list_instantiation) do |_, _, type_class, _, name, _, values| 
-          list = ListInstance.new(type_class, values.reverse())
+          list = ListInstance.new(type_class, values)
           Variable.new(ListInstance, name, list)
         end
 
@@ -386,7 +386,7 @@ class CSMMParser
 
       rule :opt_arg_list do
         match(:logical_expr, :arg_list_tail) do | arg, tail |
-          tail.append(arg)
+          tail.unshift(arg)
           tail
         end
         match(:empty) { [] }
@@ -394,7 +394,7 @@ class CSMMParser
 
       rule :arg_list_tail do
         match(",", :logical_expr, :arg_list_tail) do | _, arg, tail |
-          tail.append(arg)
+          tail.unshift(arg)
         end
         match(:empty) { [] }
       end

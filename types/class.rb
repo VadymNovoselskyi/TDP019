@@ -51,7 +51,7 @@ class ClassType
         @constructor = declaration.constructor
         if (@constructor != nil && @constructor.name != @name)
           raise "Constructor name #{@constructor.name} does not match class name #{@name}"
-        end
+        end 
         @base_constructor_call_args = declaration.base_constructor_call_args
       end
     end
@@ -62,8 +62,21 @@ class ClassType
 
   def new_instance(args = [])
     super_instance = nil
+    # puts "Creating new instance of class #{@name}"
     if (@super != nil)
-      super_instance = @super.new_instance(@base_constructor_call_args != nil ? @base_constructor_call_args : [])
+      # puts "Constructor args: #{@constructor.instance_variable_get(:@args)}"
+      # puts "Creating super class with args: #{args}; base constructor call args: #{@base_constructor_call_args}"
+
+      resolved_args = {}
+      base_constructor_args = @constructor.instance_variable_get(:@args)
+      for arg, base_constructor_arg in args.zip(base_constructor_args) do
+        if arg.eval_type() != base_constructor_arg.eval_type()
+          raise "Invalid argument type for function '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
+        end
+        resolved_args[base_constructor_arg.name] = get_primitive_node(arg)
+      end
+      resolved_args = @base_constructor_call_args.map { |arg| resolved_args[arg.name] }
+      super_instance = @super.new_instance(resolved_args)
     end
     return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args, super_instance)
   end
