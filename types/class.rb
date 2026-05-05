@@ -69,13 +69,31 @@ class ClassType
 
       resolved_args = {}
       base_constructor_args = @constructor.instance_variable_get(:@args)
+      if (args.length != base_constructor_args.length)
+        raise "Invalid number of arguments for constructor of class '#{@name}'. Expected #{base_constructor_args.length}, received #{args.length}"
+      end
+
       for arg, base_constructor_arg in args.zip(base_constructor_args) do
-        if arg.eval_type() != base_constructor_arg.eval_type()
-          raise "Invalid argument type for function '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
-        end
+        puts "Resolving argument #{arg} for base constructor parameter #{base_constructor_arg}"
+        # TODO: we need a helper for this: both variable init, reassign, class args, function args etc
+        
+        # if (base_constructor_arg.eval_type().class == ClassType && arg.class == ClassInstantiation)
+        #   # puts "Checking if #{arg.evaluate()} is a subclass of #{base_constructor_arg.get_class_name()}"
+        #   if (!arg.evaluate().is_subclass_of(base_constructor_arg.eval_type().get_class_name()))
+        #     raise "Trying to assign #{arg.evaluate()} to a variable of type #{base_constructor_arg.eval_type().get_class_name()}"
+        #   end
+        # elsif arg.eval_type() != base_constructor_arg.eval_type()
+        #   raise "Invalid argument type for class '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
+        # end
         resolved_args[base_constructor_arg.name] = get_primitive_node(arg)
       end
-      resolved_args = @base_constructor_call_args.map { |arg| resolved_args[arg.name] }
+      resolved_args = @base_constructor_call_args.map { |arg|
+        if arg.is_a?(VariableLookup)
+          resolved_args[arg.name]
+        else
+          arg
+        end 
+      }
       super_instance = @super.new_instance(resolved_args)
     end
     return ClassInstanceType.new(@member_variables.map(&:clone), @member_functions.map(&:clone), @name, @constructor, args, super_instance)
@@ -293,7 +311,7 @@ class ClassAttributeLookup < BaseNode
   end
 
   def eval_type()
-    raise "Tried to evaluate the type of a ClassAttributeLookup node"
+    raise "Tried to evaluate the type of a ClassAttributeLookup node with attribute name #{@name}"
   end
 
   def evaluate()
@@ -315,7 +333,7 @@ class ClassAttributeModification < BaseNode
   end
 
   def eval_type()
-    raise "Tried to evaluate the type of a ClassAttributeModification node"
+    raise "Tried to evaluate the type of a ClassAttributeModification node with attribute name #{@name}"
   end
 
   def evaluate()
@@ -337,7 +355,7 @@ class ClassMethodCall < BaseNode
   end  
 
   def eval_type()
-    raise "Tried to evaluate the type of a ClassMethodCall node"
+    raise "Tried to evaluate the type of a ClassMethodCall node with method name #{@name}"
   end
 
   def evaluate()

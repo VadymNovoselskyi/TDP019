@@ -42,15 +42,29 @@ class TestTestTest : TestTest {
         WriteLine('c');
         WriteLine(c);
     }
+
+    public int triple() {
+        WriteLine('i');
+        return 20;
+    }
+
+    public TestTest testFunc() {
+        TestTest tmp = new TestTest(50, 60);
+        return tmp;
+    }
 }
 
 
 
 class Program {    
     public int main() {
-        TestTestTest testTestTest = new TestTestTest(20, 30, 40);
-        WriteLine('t');
+        TestTest testTestTest = new TestTestTest(20, 30, 40);
+
         WriteLine(testTestTest.triple());
+        
+        WriteLine('z');
+        TestTest t2 = testTestTest.testFunc();
+        #WriteLine(t2.pub_var);
         return 1;
     }
 }

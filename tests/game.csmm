@@ -1,0 +1,104 @@
+class Weapon {
+    protected int dmg;
+
+    public Weapon(int d) {
+        dmg = d;
+    }
+
+    public int attack() {
+        return dmg;
+    }
+}
+
+class Sword : Weapon {
+    public Sword(): base(20) {
+
+    }
+}
+
+class Axe : Weapon {
+    public Axe(): base(30) {
+        
+    }
+}
+
+class Bow : Weapon {
+    public Bow(): base(5) {
+
+    }
+}
+
+class Entity {
+    int hp;
+
+    public Entity(int baseHp) {
+        hp = baseHp;
+    }
+
+    public bool isAlive() {
+        if (hp > 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void heal(int healPoints) {
+        hp = hp + healPoints;
+    }
+
+    public void attack(int dmg) {
+        hp = hp - dmg;
+    }
+
+}
+
+class Enemy : Entity {
+    public Weapon weapon;
+
+    public Enemy(Weapon w) : base(100) {
+        weapon = w;
+    }
+
+    public int getDmg() {
+        return weapon.attack();
+    }
+}
+
+class Swordsman : Enemy {
+    public Swordsman() : base(new Sword()) {
+        
+    }
+}
+
+
+class Player : Entity {
+    public Weapon weapon;
+    
+    public Player() : base(100) {
+        weapon = new Sword();
+    }
+
+    public int getDmg() {
+        return weapon.attack();
+    }
+
+}
+
+class Program {    
+    public int main() {
+        Player player = new Player();
+        WriteLine('p');
+        WriteLine(player.isAlive());
+
+
+        Enemy enemy = new Swordsman();
+        WriteLine('e');
+        WriteLine(enemy.isAlive());
+        WriteLine(enemy.getDmg());
+
+        #WriteLine(player.weapon.attack());
+        return 1;
+    }
+}

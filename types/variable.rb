@@ -3,15 +3,29 @@ require "./base.rb"
 class Variable < BaseNode
   attr_accessor :type_class, :name, :value 
   def initialize(type_class, name, value = nil)
-    
-    @type_class = type_class
-    @name = name
-    @value = value
-    
+    # puts "Checking type of variable assignment: name: #{name}; value #{value.inspect()}", " type #{type_class.inspect()}"
+    if !(value == nil || value.is_a?(FunctionCall) || value.is_a?(ClassMethodCall))
+      if (type_class.class == ClassType && value.class == ClassInstantiation)
+        if (!value.evaluate().is_subclass_of(type_class.get_class_name()))
+          raise "Trying to assign #{value.evaluate()} to a variable of type #{type_class.get_class_name()}"
+        end
+      elsif (value.eval_type() != type_class)
+        raise "Trying to assign #{value.eval_type()} to a variablel of type #{type_class}"
+      end
+    end
+      
+      @type_class = type_class
+      @name = name
+      @value = value
   end
   
   def reassign(new_value)
-    if (@type_class.class == ClassType && new_value.evaluate().is_subclass_of(@type_class.get_class_name()))
+    # puts "Reassigning variable #{@name} to new value #{new_value.inspect()} of type #{new_value.eval_type()}"
+    if (@type_class.class == ClassType && (new_value.eval_type() == ClassInstantiation || new_value.eval_type() == ClassInstanceType))
+      if (!new_value.evaluate().is_subclass_of(@type_class.get_class_name()))
+        raise "Trying to assign #{new_value.evaluate()} to a variable of type #{@type_class.get_class_name()}"
+      end
+
       @value = new_value.evaluate()
       return
     end

@@ -5,7 +5,8 @@ require "./types/list.rb"
 def get_primitive_node(node)
   value = node.evaluate()
   if value.is_a?(Integer)
-    return Int.new(value)
+    value_type = node.eval_type()
+    return value_type == Int ? Int.new(value) : Char.from_codepoint(value)
   elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
     return Bool.new(value)
   elsif value.is_a?(String) && value.length == 1
@@ -58,6 +59,10 @@ end
 class Char < BaseNode
   def initialize(val)
     @val = val.codepoints[1]
+  end
+
+  def self.from_codepoint(codepoint)
+    return Char.new("'#{codepoint.chr()}'")
   end
 
   def eval_type()

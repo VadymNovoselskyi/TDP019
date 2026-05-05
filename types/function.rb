@@ -7,8 +7,8 @@ require "./types/writeLine.rb"
 class Function < BaseNode
   attr_accessor :access_attr, :return_type, :name, :executables 
 
-  def initialize(access_attr, return_type, name, args, executables)  
-    if !return_type.is_a?(Void) && executables.length == 0
+  def initialize(access_attr, return_type, name, args, executables)
+    if !return_type.is_a?(Void) && executables.length == 0 && return_type != name
       raise "No executables/return for a function that is not void"
     end
     # puts "access_attr: #{access_attr}"
@@ -38,9 +38,11 @@ class Function < BaseNode
     end
 
     for arg, expected_arg in args.zip(clone_args) do
-      if arg.eval_type() != expected_arg.eval_type()
-        raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()}"
-      end
+      # TOOD: comment back in:
+      
+      # if arg.eval_type() != expected_arg.eval_type()
+      #   raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()} for argument '#{expected_arg.name}'"
+      # end
       # puts "Reassigning argument: #{get_primitive_node(arg)} to #{expected_arg.inspect}"
       expected_arg.reassign(get_primitive_node(arg))
     end
@@ -86,7 +88,7 @@ class Function < BaseNode
       elsif node_value
         node_value = replace_lookups(node_value, scope)
         resolved_value = get_primitive_node(node_value)
-        node.instance_variable_set(value_name, resolved_value)
+        node.is_a?(Variable) ? node.reassign(resolved_value) : node.instance_variable_set(value_name, resolved_value)
       end
 
       if node.is_a?(ClassAttributeModification)
@@ -212,9 +214,9 @@ class Function < BaseNode
       # puts "Before VariableLookup: #{node}"
       # puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
-      replace_lookups(scoped_node, scope)
-      # puts "VariableLookup after replace_lookups: scoped_node: #{scoped_node}"
-      return scoped_node
+      replaced_node = replace_lookups(scoped_node, scope)
+      # puts "VariableLookup after replace_lookups: replaced_node: #{replaced_node}"
+      return replaced_node
     elsif node.is_a?(FunctionCall)
       # puts "Before: FunctionCall: #{node}"
       function_call_value = call_function(scope, node.name, node.args)
