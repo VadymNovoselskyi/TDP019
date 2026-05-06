@@ -9,8 +9,6 @@ class ListInstance
 
     for element in elements
       if !is_correct_type(element)
-        puts "Element: #{element}"
-        puts "Type: #{type.class}"
         raise "Type error: expected #{@type}, got #{element.eval_type()}"
       end
     end
@@ -20,9 +18,10 @@ class ListInstance
   end
 
   def is_correct_type(element)
+    element = element.class == Variable ? element.value : element
     element_type = element.eval_type()
     if @contains_classes
-      return element_type == ClassInstanceType && element.is_subclass_of(@type.type.get_class_name())
+      return element_type == ClassInstanceType && element.is_subclass_of(@type.get_class_name())
     end
 
     return element_type == @type
@@ -74,6 +73,14 @@ class ListInstance
     @elements.delete_at(index)
   end
 
+  def Shuffle()
+    n = @elements.length
+    for i in (n - 1).downto(1) do
+      j = rand(0..i)
+      @elements[i], @elements[j] = @elements[j], @elements[i]
+    end
+  end
+
 
   def get_attribute(name, _callee = nil)
     if name == "Count"
@@ -83,4 +90,7 @@ class ListInstance
     end
   end
 
+  def method_missing(name, *args)
+    raise "No method named '#{name}' found for ListInstance"
+  end
 end
