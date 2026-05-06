@@ -1,6 +1,7 @@
 class Program {
     public int main() {
         int a = 0;
+        WriteLine('f');
         for (int i = 0; i < 10; i = i + 1) {
             a = a + i;
             if(a > 20) {
@@ -10,6 +11,7 @@ class Program {
         }
 
         int b = 0;
+        WriteLine('w');
         while (b <= 10) {
             WriteLine(b);
             b = b + 1;
@@ -17,6 +19,7 @@ class Program {
             continue;
             WriteLine('x');
         }
+        WriteLine('b');
         WriteLine(b);
 
         return a;

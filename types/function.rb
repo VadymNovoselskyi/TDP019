@@ -125,12 +125,13 @@ class Function < BaseNode
         iter_executables = node.evaluate()
         # puts "Iter executables: #{iter_executables}"
 
+        iterable_scope = scope.clone()
         for executable in iter_executables do
           # puts "--------------------------------"
           # puts "executable before replace_lookups: #{executable.inspect}"
-          # replace_lookups(executable, scope)
+          # replace_lookups(executable, iterable_scope)
           # puts "executable after replace_lookups: #{executable.inspect}"
-          result = handle_executable(executable, scope)
+          result = handle_executable(executable, iterable_scope)
           if (result.is_a?(Hash) && result[:should_break])
             return
           elsif (result.is_a?(Hash) && result[:should_continue])
@@ -141,9 +142,12 @@ class Function < BaseNode
         end
 
         if node.is_a?(ForNode)
-          handle_executable(node.increment_block.clone(), scope)
+          handle_executable(node.increment_block.clone(), iterable_scope)
         end
+
+        scope.consolidate_scope(iterable_scope)
       end
+
       return
     end
 
@@ -358,6 +362,22 @@ class FunctionScope
     end
 
     return class_instance.run_function(name, args, "outside")
+  end
+
+  def clone()
+    new_scope = FunctionScope.new(@callee, [], @name)
+    for key in @scope.keys
+      new_scope.set(key, @scope[key].clone())
+    end
+    return new_scope
+  end
+
+  def consolidate_scope(extended_scope)
+    for key in extended_scope.instance_variable_get(:@scope).keys
+      next if !@scope.has_key?(key)
+      
+      @scope[key] = extended_scope.instance_variable_get(:@scope)[key]
+    end
   end
 end
 
