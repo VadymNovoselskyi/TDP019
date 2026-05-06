@@ -29,7 +29,7 @@ class Bow : Weapon {
 }
 
 class Entity {
-    int hp;
+    protected int hp;
 
     public Entity(int baseHp) {
         hp = baseHp;
@@ -70,11 +70,30 @@ class Swordsman : Enemy {
     public Swordsman() : base(new Sword()) {
         
     }
+
+    public void attack(int dmg) {
+        int reducedDmg = (dmg / 10) * 8;
+        hp = hp - reducedDmg;
+    }
+
+}
+
+class Bowman : Enemy {
+    public Bowman() : base(new Bow()) {
+        
+    }
+}
+
+class Axeman : Enemy {
+    public Axeman() : base(new Axe()) {
+
+    }
 }
 
 
 class Player : Entity {
     public Weapon weapon;
+    public char name = 'p';
     
     public Player() : base(100) {
         weapon = new Sword();
@@ -89,14 +108,33 @@ class Player : Entity {
 class Program {    
     public int main() {
         Player player = new Player();
-        WriteLine('p');
+        WriteLine(player.name);
         WriteLine(player.isAlive());
+        List<Enemy> enemies = [];
 
+        for (int s = 0; s < 3; s = s + 1) {
+            Swordsman enemy = new Swordsman();
+            enemies.Add(enemy);
+        }
 
-        Enemy enemy = new Swordsman();
-        WriteLine('e');
-        WriteLine(enemy.isAlive());
-        WriteLine(enemy.getDmg());
+        for (int b = 0; b < 2; b = b + 1) {
+            Bowman enemy = new Bowman();
+            enemies.Add(enemy);
+        }
+
+        for (int a = 0; a < 2; a = a + 1) {
+            Axeman enemy = new Axeman();
+            enemies.Add(enemy);
+        }
+
+        enemies.Shuffle();
+
+        #enemies[0].attack(20);
+        for (int i = 0; i < enemies.Count; i = i + 1) {
+            #enemies[i].attack(player.getDmg());
+            #WriteLine(enemies[i].isAlive());
+        }
+
 
         #WriteLine(player.weapon.attack());
         return 1;

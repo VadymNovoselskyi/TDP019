@@ -1,0 +1,54 @@
+class C {
+    int d;
+    
+    public C() {
+        d = 69;
+    }
+
+    public int e() {
+        return 67;
+    } 
+}
+
+class B {
+    C c;
+    public B() {
+        c = new C();
+    }
+
+    public C get_c() {
+        return c;
+    }
+}
+
+class A {
+    B b;
+    public A() {
+        b = new B();
+    }
+}
+
+class Program {
+    public int main() {
+        WriteLine(1111);
+
+        A a = new A();
+        WriteLine(a);
+        WriteLine(a.b);
+        WriteLine(a.b.c);
+        WriteLine(a.b.c.d);
+
+
+        WriteLine(2222);
+        C c = new C();
+        WriteLine(c.e());
+
+        WriteLine(3333);
+        WriteLine(a.b.c.e());
+
+        WriteLine(4444);
+        WriteLine(a.b.get_c().d);
+        WriteLine(a.b.get_c().e());
+        return 1;
+    }
+}

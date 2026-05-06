@@ -229,15 +229,16 @@ class Function < BaseNode
       return function_call_value
     elsif node.is_a?(ClassAttributeLookup)
       # puts "Before ClassAttributeLookup: #{node}"
-      class_attribute_value = scope.get_attribute(node.variable_name, node.name)
+      class_attribute_value = scope.get_attribute(node.attribute_name, node.access_chain)
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
+      raise "Tried to replace lookups for a ClassMethodCall node. This should be handled by the chain itself, not replace_lookups."
       # puts "Before ClassMethodCall: #{node}"
-      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      class_method_value = scope.run_class_method(node.variable_name, node.name, new_args)
+      # new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      # class_method_value = scope.run_class_method(node.method_name, new_args, node.access_chains)
       # puts "After ClassMethodCall: #{class_method_value}"
-      return class_method_value
+      # return class_method_value
     elsif node.is_a?(ClassInstantiation)
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
       class_instantiation_value = node.class_type.new_instance(new_args)
@@ -319,10 +320,12 @@ class FunctionScope
     return @callee.run_function(name, args, "inside")
   end
 
-  def get_attribute(variable_name, name)
+  def get_attribute(variable_name, attribute)
+    # puts "Getting attribute '#{attribute}' from variable '#{variable_name}' in function '#{@name}'"
     if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
       raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
+
     class_instance = nil
     if @scope.has_key?(variable_name)
       class_instance = @scope[variable_name].value
@@ -330,7 +333,7 @@ class FunctionScope
       class_instance = @callee.get_attribute(variable_name, "inside").value
     end
 
-    return class_instance.get_attribute(name, "outside")
+    return class_instance.get_attribute(attribute, "outside")
   end
 
   def set_attribute(variable_name, name, value)

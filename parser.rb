@@ -345,8 +345,8 @@ class CSMMParser
         match('(', :logical_expr, ')') {|_, a, _| a }
 
         match(:class_instantiation)
-        match(:class_method_call)
-        match(:class_attribute_access)
+        # match(:class_method_call)
+        match(:access_chain)
 
         match(:list_access)
 
@@ -354,21 +354,32 @@ class CSMMParser
         match(:literal)
       end
 
+      rule :access_chain do
+        # match(:ID, ".", :ID) do | variable_name, _, attribute_name |
+        #   ClassAttributeLookup.new(variable_name, attribute_name)
+        # end
+
+        match(:ID, ".", :access_chain) do | attribute_name, _, access_chain |
+          ClassAttributeLookup.new(attribute_name, access_chain)
+        end
+
+        match(:ID, "(", :opt_arg_list, ")", ".", :access_chain) do | method_name, _, args,_, _, access_chain, _ |
+          ClassMethodCall.new(method_name, args, access_chain)
+        end
+
+        match(:ID, "(", :opt_arg_list, ")") do | id, _, args, _ |
+          FunctionCall.new(id, args)
+        end
+
+        match(:ID) do | variable_name | 
+          VariableLookup.new(variable_name)
+        end
+        
+      end
+
       rule :class_instantiation do
         match("new", :class_type, "(", :opt_arg_list, ")") do | _, class_type, _, args, _ |
           ClassInstantiation.new(class_type, args)
-        end
-      end
-
-      rule :class_attribute_access do
-        match(:ID, ".", :ID) do | variable_name, _, attribute_name |
-          ClassAttributeLookup.new(variable_name, attribute_name)
-        end
-      end
-
-      rule :class_method_call do
-        match(:ID, ".", :ID, "(", :opt_arg_list, ")") do | variable_name, _, method_name, _, args, _ |
-          ClassMethodCall.new(variable_name, method_name, args)
         end
       end
 

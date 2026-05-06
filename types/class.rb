@@ -69,12 +69,13 @@ class ClassType
 
       resolved_args = {}
       base_constructor_args = @constructor.instance_variable_get(:@args)
+      # puts "Base constructor args: #{base_constructor_args}"
       if (args.length != base_constructor_args.length)
         raise "Invalid number of arguments for constructor of class '#{@name}'. Expected #{base_constructor_args.length}, received #{args.length}"
       end
 
       for arg, base_constructor_arg in args.zip(base_constructor_args) do
-        puts "Resolving argument #{arg} for base constructor parameter #{base_constructor_arg}"
+        # puts "Resolving argument #{arg} for base constructor parameter #{base_constructor_arg}"
         # TODO: we need a helper for this: both variable init, reassign, class args, function args etc
         
         # if (base_constructor_arg.eval_type().class == ClassType && arg.class == ClassInstantiation)
@@ -199,32 +200,57 @@ class ClassInstanceType
   return false
  end
 
-# calle can be "outside" "inside" or "subclass"
- def get_attribute(name, callee = "outside")
-
-   if (@variable_scope[:public][name] != nil)
-     return @variable_scope[:public][name]
-   end
-
-   if (callee == "inside" || callee == "subclass")
-    if (@variable_scope[:protected][name] != nil)
-      return @variable_scope[:protected][name]
-    end
-   end
-   
-   if (callee == "inside")
-    if (@variable_scope[:private][name] != nil)
-      return @variable_scope[:private][name]
-    end
-   end
-
-   if (@super != nil)
-     return @super.get_attribute(name, callee == "outside" ? "outside" : "subclass")
-   end
-
-   raise "Class #{@class_name} doesn't have a variable named: #{name}"
-   
+ def handle_chain_access(node, callee = "outside")
+  #puts "Handling chain access for node #{node} with callee '#{callee}' in class '#{@class_name}'"
+  if node.is_a?(VariableLookup)
+    #puts "Node is a VariableLookup with name #{node.name}"
+    return get_attribute(node.name, callee)
+  elsif node.is_a?(FunctionCall)
+    #puts "Node is a FunctionCall with name #{node.name} and args #{node.args}"
+    return run_function(node.name, node.args, callee)
+  elsif node.is_a?(ClassAttributeLookup)
+    #puts "Node is a ClassAttributeLookup with attribute name #{node.attribute_name} and access chain #{node.access_chain}"
+    class_attribute_value = get_attribute(node.attribute_name, callee).value
+    #puts "Got class attribute value: #{class_attribute_value}"
+    return class_attribute_value.handle_chain_access(node.access_chain, callee == "outside" ? "outside" : "subclass")
+  elsif node.is_a?(ClassMethodCall)
+    #puts "Node is a ClassMethodCall with method name #{node.method_name}, args #{node.args} and access chain #{node.access_chain}"
+    class_method_value = run_function(node.method_name, node.args, callee).evaluate()
+    #puts "Got class method value: #{class_method_value.class}"
+    return class_method_value.handle_chain_access(node.access_chain, callee == "outside" ? "outside" : "subclass")
+  else
+    raise "Unsupported node type in attribute access chain: #{node.class}"
+  end
  end
+
+# calle can be "outside" "inside" or "subclass"
+  def get_attribute(attribute, callee = "outside")
+    if (attribute.class != String)
+      return handle_chain_access(attribute, callee)
+    end
+
+    if (@variable_scope[:public][attribute] != nil)
+      return @variable_scope[:public][attribute]
+    end
+
+    if (callee == "inside" || callee == "subclass")
+      if (@variable_scope[:protected][attribute] != nil)
+        return @variable_scope[:protected][attribute]
+      end
+    end
+
+    if (callee == "inside")
+      if (@variable_scope[:private][attribute] != nil)
+        return @variable_scope[:private][attribute]
+      end
+    end
+
+    if (@super != nil)
+      return @super.get_attribute(attribute, callee == "outside" ? "outside" : "subclass")
+    end
+
+    raise "Class #{@class_name} doesn't have a variable named: #{attribute}"
+  end
 
  def set_attribute(name, value, callee = "outside")
   if (@variable_scope[:public][name] != nil)
@@ -297,21 +323,25 @@ class ClassInstanceType
   return false
  end
 
+ def get_class_name()
+  return @class_name
+ end
+
  def to_s()
   return "Instance of class #{@class_name}"
  end
 end
 
 class ClassAttributeLookup < BaseNode
-  attr_accessor :variable_name, :name
+  attr_accessor :attribute_name, :access_chain
 
-  def initialize(variable_name, name)
-    @variable_name = variable_name
-    @name = name
+  def initialize(attribute_name, access_chain)
+    @attribute_name = attribute_name
+    @access_chain = access_chain
   end
 
   def eval_type()
-    raise "Tried to evaluate the type of a ClassAttributeLookup node with attribute name #{@name}"
+    raise "Tried to evaluate the type of a ClassAttributeLookup node with attribute access_chain #{@access_chain}"
   end
 
   def evaluate()
@@ -319,7 +349,7 @@ class ClassAttributeLookup < BaseNode
   end
 
   def clone()
-    return ClassAttributeLookup.new(@variable_name, @name)
+    return ClassAttributeLookup.new(@attribute_name, @access_chain.clone())
   end
 end
 
@@ -346,16 +376,16 @@ class ClassAttributeModification < BaseNode
 end
 
 class ClassMethodCall < BaseNode
-  attr_accessor :variable_name, :name, :args
+  attr_accessor :method_name, :args, :access_chain
 
-  def initialize(variable_name, name, args)
-    @variable_name = variable_name
-    @name = name
+  def initialize(method_name, args, access_chain)
+    @method_name = method_name
     @args = args
+    @access_chain = access_chain
   end  
 
   def eval_type()
-    raise "Tried to evaluate the type of a ClassMethodCall node with method name #{@name}"
+    raise "Tried to evaluate the type of a ClassMethodCall node with method name #{@method_name}"
   end
 
   def evaluate()
@@ -363,6 +393,6 @@ class ClassMethodCall < BaseNode
   end
 
   def clone()
-    return ClassMethodCall.new(@variable_name, @name, @args.map(&:clone))
+    return ClassMethodCall.new(@method_name, @args.map(&:clone), @access_chain.clone())
   end
 end

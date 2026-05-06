@@ -5,7 +5,7 @@ class Variable < BaseNode
   def initialize(type_class, name, value = nil)
     # puts "Checking type of variable assignment: name: #{name}; value #{value.inspect()}", " type #{type_class.inspect()}"
     if !(value == nil || value.is_a?(FunctionCall) || value.is_a?(ClassMethodCall))
-      if (type_class.class == ClassType && value.class == ClassInstantiation)
+      if (type_class.class == ClassType && (value.class == ClassInstantiation || value.eval_type() == ClassInstanceType))
         if (!value.evaluate().is_subclass_of(type_class.get_class_name()))
           raise "Trying to assign #{value.evaluate()} to a variable of type #{type_class.get_class_name()}"
         end
