@@ -219,11 +219,11 @@ class Function < BaseNode
     return "\e[38;2;0;128;0m[WriteLine]:\e[0m"
   end
 
-  def replace_lookups(node, scope)
+  def replace_lookups(node, scope, only_children = false)
     return node if node == nil
     # puts "--------------------------------"
 
-    if node.is_a?(VariableLookup)
+    if node.is_a?(VariableLookup) && !only_children
       # puts "Before VariableLookup: #{node}"
       # puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
@@ -231,6 +231,10 @@ class Function < BaseNode
       # puts "VariableLookup after replace_lookups: replaced_node: #{replaced_node}"
       return replaced_node
     elsif node.is_a?(FunctionCall)
+      if only_children
+        new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+        return FunctionCall.new(node.name, new_args)
+      end
       # puts "Before: FunctionCall: #{node}"
       function_call_value = call_function(scope, node.name, node.args)
       # puts "FunctionCall after function call: function_call_value: #{function_call_value.class}"
@@ -238,6 +242,9 @@ class Function < BaseNode
       return function_call_value
     elsif node.is_a?(ClassAttributeLookup)
       # puts "Before ClassAttributeLookup: #{node}"
+      replaced_access_chain = replace_lookups(node.access_chain, scope, true)
+      node.instance_variable_set(:@access_chain, replaced_access_chain)
+      # puts "After replacing access chain: #{node}"
       class_attribute_value = scope.get_attribute(node.attribute_name, node.access_chain)
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
