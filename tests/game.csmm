@@ -144,6 +144,7 @@ class Program {
         #enemies[0].attack(20);
         for (int i = 0; i < enemies.Count; i = i + 1) {
             #enemies[i].attack(player.getDmg());
+            WriteLine(i);
             WriteLine(enemies[i]);
         }
 

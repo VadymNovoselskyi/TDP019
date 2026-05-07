@@ -112,10 +112,7 @@ class Function < BaseNode
     end
 
     if node.is_a?(ClassAttributeLookup)
-      # puts "Handling ClassAttributeLookup node '#{node}'"
-      replaced = replace_lookups(node, scope)
-      # puts "After replace_lookups, ClassAttributeLookup node is '#{replaced}'"
-      # scope.get_attribute(replaced.attribute_name, replaced.access_chain)
+      replace_lookups(node, scope)
       return
     end
     
@@ -136,10 +133,6 @@ class Function < BaseNode
 
         iterable_scope = scope.clone()
         for executable in iter_executables do
-          # puts "--------------------------------"
-          # puts "executable before replace_lookups: #{executable.inspect}"
-          # replace_lookups(executable, iterable_scope)
-          # puts "executable after replace_lookups: #{executable.inspect}"
           result = handle_executable(executable, iterable_scope)
           if (result.is_a?(Hash) && result[:should_break])
             return
@@ -243,12 +236,13 @@ class Function < BaseNode
     elsif node.is_a?(ClassAttributeLookup)
       # puts "Before ClassAttributeLookup: #{node}"
       replaced_access_chain = replace_lookups(node.access_chain, scope, true)
-      node.instance_variable_set(:@access_chain, replaced_access_chain)
-      # puts "After replacing access chain: #{node}"
+      replaced_node = node.clone()
+      replaced_node.instance_variable_set(:@access_chain, replaced_access_chain)
+      # puts "After replacing access chain: #{replaced_node}"
 
-      return node if only_children
+      return replaced_node if only_children
 
-      class_attribute_value = scope.get_attribute(node.attribute_name, node.access_chain)
+      class_attribute_value = scope.get_attribute(replaced_node.attribute_name, replaced_node.access_chain)
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
