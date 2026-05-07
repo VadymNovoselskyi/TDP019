@@ -47,8 +47,6 @@ class ClassType
       elsif declaration.is_a?(Function)
         member_functions.append(declaration)
       elsif declaration.is_a?(Constructor)
-        # puts "constructor: #{declaration.constructor}"
-        # puts "base_constructor_call_args: #{declaration.base_constructor_call_args}"
         @constructor = declaration.constructor
         if (@constructor != nil && @constructor.name != @name)
           raise "Constructor name #{@constructor.name} does not match class name #{@name}"
@@ -63,20 +61,15 @@ class ClassType
 
   def new_instance(args = [])
     super_instance = nil
-    # puts "Creating new instance of class #{@name}"
     if (@super != nil)
-      # puts "Constructor args: #{@constructor.instance_variable_get(:@args)}"
-      # puts "Creating super class with args: #{args}; base constructor call args: #{@base_constructor_call_args}"
 
       resolved_args = {}
       base_constructor_args = @constructor.instance_variable_get(:@args)
-      # puts "Base constructor args: #{base_constructor_args}"
       if (args.length != base_constructor_args.length)
         raise "Invalid number of arguments for constructor of class '#{@name}'. Expected #{base_constructor_args.length}, received #{args.length}"
       end
 
       for arg, base_constructor_arg in args.zip(base_constructor_args) do
-        # puts "Resolving argument #{arg} for base constructor parameter #{base_constructor_arg}"
         if !is_of_equal_types(arg, base_constructor_arg)
           raise "Invalid argument type for constructor of class '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
         end  
@@ -213,22 +206,15 @@ class ClassInstanceType
  end
 
  def handle_chain_access(node, callee = "outside")
-  #puts "Handling chain access for node #{node} with callee '#{callee}' in class '#{@class_name}'"
   if node.is_a?(VariableLookup)
-    #puts "Node is a VariableLookup with name #{node.name}"
     return get_attribute(node.name, callee)
   elsif node.is_a?(FunctionCall)
-    #puts "Node is a FunctionCall with name #{node.name} and args #{node.args}"
     return run_function(node.name, node.args, callee)
   elsif node.is_a?(ClassAttributeLookup)
-    #puts "Node is a ClassAttributeLookup with attribute name #{node.attribute_name} and access chain #{node.access_chain}"
     class_attribute_value = get_attribute(node.attribute_name, callee).value
-    #puts "Got class attribute value: #{class_attribute_value}"
     return class_attribute_value.handle_chain_access(node.access_chain, callee == "outside" ? "outside" : "subclass")
   elsif node.is_a?(ClassMethodCall)
-    #puts "Node is a ClassMethodCall with method name #{node.method_name}, args #{node.args} and access chain #{node.access_chain}"
     class_method_value = run_function(node.method_name, node.args, callee).evaluate()
-    #puts "Got class method value: #{class_method_value.class}"
     return class_method_value.handle_chain_access(node.access_chain, callee == "outside" ? "outside" : "subclass")
   else
     raise "Unsupported node type in attribute access chain: #{node.class}"

@@ -12,11 +12,6 @@ class Function < BaseNode
     if !return_type.is_a?(Void) && executables.length == 0 && return_type != name
       raise "No executables/return for a function that is not void"
     end
-    # puts "access_attr: #{access_attr}"
-    # puts "return_type: #{return_type}"
-    # puts "name: #{name}"
-    # puts "args: #{args}"
-    # puts "executables: #{executables}"
 
     @access_attr = access_attr
     @return_type = return_type
@@ -31,7 +26,6 @@ class Function < BaseNode
   end
   
   def evaluate(callee, args = [])
-    # puts "Evaluating function '#{@name}' with args: #{args.inspect}"
     clone_args = @args.map(&:clone)
 
     if args.length != clone_args.length
@@ -48,7 +42,6 @@ class Function < BaseNode
     scope = FunctionScope.new(callee, clone_args, @name)
 
     clone_executables = @executables.map(&:clone)
-    # puts "clone_executables: #{clone_executables.inspect}"
     for node in clone_executables do
       result = handle_executable(node, scope)
       return result if result != nil
@@ -56,8 +49,6 @@ class Function < BaseNode
   end
 
   def handle_executable(node, scope)
-    # puts "handling executable of type: #{node.class}"
-    # puts "node: #{node}", "\n"
 
     if node.is_a?(BreakNode) 
       return {should_break: true}
@@ -68,7 +59,6 @@ class Function < BaseNode
     end
 
     if node.is_a?(Variable) && node.eval_type() == ClassInstantiation
-      puts "Handling class instantiation for variable '#{node.name}'\n\n"
       class_instance = node.evaluate()
       node.instance_variable_set(:@value, class_instance)
       scope.set(node.name, node)
@@ -108,10 +98,7 @@ class Function < BaseNode
     end
     
     if node.class < Iterable
-      # puts "Handling iterable node: #{node}"
-      # puts "Should run? #{node.get_condition()}", "\n"
       if node.is_a?(ForNode)
-        # puts "ForNode initial block: #{node.initial_block}"
         handle_executable(node.initial_block, scope)
       end
       
@@ -120,7 +107,6 @@ class Function < BaseNode
         break unless condition.evaluate()
 
         iter_executables = node.evaluate()
-        # puts "Iter executables: #{iter_executables}"
 
         iterable_scope = scope.clone()
         for executable in iter_executables do
@@ -145,19 +131,16 @@ class Function < BaseNode
     end
 
     if node.is_a?(Conditional)
-      # puts "replacing lookups for conditions: #{node.conditions.inspect}"
       for condition in node.conditions
         replace_lookups(condition, scope)
       end
       
       executables = node.evaluate()
-      # puts "executables: #{executables.inspect}"
       if executables == nil
         return
       end
 
       for executable in executables
-        # puts "executable: #{executable.inspect}"
         result = handle_executable(executable, scope)
         return result if result != nil
       end
@@ -166,7 +149,6 @@ class Function < BaseNode
 
     if node.is_a?(WriteLine)
       if node.evaluate().length == 0
-        puts "#{get_write_line_prefix()}"
         return
       end
 
@@ -174,16 +156,13 @@ class Function < BaseNode
         arg_value = replace_lookups(arg, scope)
         if arg_value.eval_type() == Char
           value = arg_value.evaluate().chr()
-          puts "#{get_write_line_prefix()} #{value}"
         elsif arg_value.eval_type() == ListInstance
           vals = []
           for element in arg_value.evaluate().get_elements()
             element_value = replace_lookups(element, scope)
             vals << element_value.evaluate().to_s()
           end
-          puts "#{get_write_line_prefix()} [#{vals.join(", ")}]"
         else
-          puts "#{get_write_line_prefix()} #{arg_value.evaluate()}" 
         end
       end
       return
@@ -205,44 +184,32 @@ class Function < BaseNode
 
   def replace_lookups(node, scope, only_children = false)
     return node if node == nil
-    # puts "--------------------------------"
 
     if node.is_a?(VariableLookup) && !only_children
-      # puts "Before VariableLookup: #{node}"
-      # puts "scope.get(node.name): #{scope.get(node.name)}"
       scoped_node = scope.get(node.name)
       replaced_node = replace_lookups(scoped_node, scope)
-      # puts "VariableLookup after replace_lookups: replaced_node: #{replaced_node}"
       return replaced_node
     elsif node.is_a?(FunctionCall)
       if only_children
         new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
         return FunctionCall.new(node.name, new_args)
       end
-      # puts "Before: FunctionCall: #{node}"
       function_call_value = call_function(scope, node.name, node.args)
-      # puts "FunctionCall after function call: function_call_value: #{function_call_value.class}"
-      # puts "After replace_lookups: function_call_value: #{function_call_value}"
       return function_call_value
     elsif node.is_a?(ClassAttributeLookup)
-      # puts "Before ClassAttributeLookup: #{node}"
       replaced_access_chain = replace_lookups(node.access_chain, scope, true)
       replaced_node = node.clone()
       replaced_node.instance_variable_set(:@access_chain, replaced_access_chain)
-      # puts "After replacing access chain: #{replaced_node}"
 
       return replaced_node if only_children
 
       class_attribute_value = scope.get_attribute(replaced_node.attribute_name, replaced_node.access_chain)
-      # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
       raise "Tried to replace lookups for a ClassMethodCall node. This should be handled by the chain itself, not replace_lookups." if !only_children
 
-      # puts "Before ClassMethodCall: #{node}"
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
       node.instance_variable_set(:@args, new_args)
-      # puts "After ClassMethodCall: #{node}"
       return node
     elsif node.is_a?(ClassInstantiation)
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
@@ -251,25 +218,21 @@ class Function < BaseNode
     end
 
     if (node.instance_variables.include?(:@lhs))
-      # puts "For node: \n#{node} \nLooking up lhs: #{node.instance_variable_get(:@lhs)}"
       old_lhs = node.instance_variable_get(:@lhs)
       replaced_node = replace_lookups(old_lhs, scope)
       node.instance_variable_set(:@lhs, replaced_node)
     end
     if (node.instance_variables.include?(:@rhs))
-      # puts "For node: \n#{node} \nLooking up rhs: #{node.instance_variable_get(:@rhs)}"
       old_rhs = node.instance_variable_get(:@rhs)
       replaced_node = replace_lookups(old_rhs, scope)
       node.instance_variable_set(:@rhs, replaced_node)
     end
     if (node.instance_variables.include?(:@value))
-      # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@value)}"
       old_value = node.instance_variable_get(:@value)
       replaced_node = replace_lookups(old_value, scope)
       node.instance_variable_set(:@value, replaced_node)
     end
     if (node.instance_variables.include?(:@new_value))
-      # puts "For node: \n#{node} \nLooking up value: #{node.instance_variable_get(:@new_value)}"
       old_value = node.instance_variable_get(:@new_value)
       replaced_node = replace_lookups(old_value, scope)
       node.instance_variable_set(:@new_value, replaced_node)
@@ -286,9 +249,6 @@ end
 
 class FunctionScope 
   def initialize(callee, args, name)
-    # puts "callee: #{callee}"
-    # puts "args: #{args}"
-    # puts "name: #{name}"
 
     @callee = callee
     @scope = {}
@@ -297,10 +257,8 @@ class FunctionScope
       @scope[arg.name] = arg
     end
 
-    # puts "scope: #{@scope}"
   end
   
-  # Gets the class instance. (Doesn't evaluate it)
   def get(key)
     if @scope.has_key?(key)
       return @scope[key]
@@ -326,7 +284,6 @@ class FunctionScope
   end
 
   def get_attribute(variable_name, attribute)
-    # puts "Getting attribute '#{attribute}' from variable '#{variable_name}' in function '#{@name}'"
     if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
       raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
@@ -357,7 +314,6 @@ class FunctionScope
   end
 
   def run_class_method(variable_name, name, args)
-    # puts "Running class method '#{name}' on variable '#{variable_name}' with args: #{args.inspect}"
     if !@scope.has_key?(variable_name) && !@callee.has_attribute(variable_name, "inside")
       raise "Function '#{@name}' has no class instance named '#{variable_name}' in the current context;"
     end
@@ -401,7 +357,6 @@ class ReturnNode < BaseNode
   end
 
   def evaluate()
-    # return @value.evaluate() if @value.is_a?(BaseNode)
     return @value.evaluate()
   end
 

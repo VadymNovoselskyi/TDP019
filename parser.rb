@@ -466,7 +466,6 @@ class CSMMParser
     res = program_class.evaluate()
     endtime = Time.now
     puts "Program executed in #{endtime - start} seconds."
-    # puts "Class types: #{@@class_types}"
     return res
   end
   

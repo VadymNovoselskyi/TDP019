@@ -18,19 +18,16 @@ class Conditional < BaseNode
 
   def evaluate()
     if (@if_branch.should_run())
-      # puts "If block: #{@if_block.inspect}"
       return @if_branch.get_block()
     end
 
     for else_if in @else_if_branches
       if (else_if.should_run())
-        # puts "Else if block: #{else_if.inspect}"
         return else_if.get_block()
       end
     end
 
     if (@else_branch != nil)
-      # puts "Else block: #{@else_branch.inspect}"
       return @else_branch.get_block()
     end
 

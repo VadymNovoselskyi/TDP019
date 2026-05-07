@@ -4,8 +4,6 @@ require "./helpers.rb"
 class Variable < BaseNode
   attr_accessor :type_class, :name, :value 
   def initialize(type_class, name, value = nil)
-    
-    # puts "Checking type of variable assignment: name: #{name}; value #{value.inspect()}", " type #{type_class.inspect()}"
     if value != nil && !is_lookup_node(value) && !is_assignable_to_type(value, type_class)
       raise "Trying to assign #{value.evaluate()} to a variable of type #{type_class}"
     end
@@ -37,8 +35,6 @@ class Variable < BaseNode
   end
   
   def evaluate()
-    # puts "Evaluating Variable: #{@self.inspect}"
-
     if (@value == nil) 
       raise "Use of unassigned variable #{@name}"
     end
@@ -68,7 +64,6 @@ class VariableLookup < BaseNode
   end
 
   def clone()
-    # raise "Tried to clone a VariableLookup node"
     return VariableLookup.new(@name)
   end
 end
@@ -94,11 +89,6 @@ class Reassign < BaseNode
 end
 
 class ListReassign < Reassign
-
-  # def initialize(name, new_value)
-  #   super(name, new_value)
-  # end
-
   def eval_type()
     raise "Should not evaluate type of a ListReassign node"
   end

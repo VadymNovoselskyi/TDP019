@@ -8,15 +8,12 @@ def is_of_equal_types(lhs, rhs)
   end
 
   if (is_class_type(lhs) && is_class_type(rhs))
-    # puts "Comparing two class-related types: #{lhs.eval_type()} and #{rhs.eval_type()}"
     class_type, class_instance = lhs.eval_type().is_a?(ClassType) ? [lhs.eval_type(), rhs] : [rhs.eval_type(), lhs]
     class_name = class_type.get_class_name()
     class_instance = class_instance.is_a?(ClassInstantiation) ? class_instance.evaluate() : class_instance
-    # puts "Comparing class instance #{class_instance.get_class_name()} to class name #{class_name}"
     return class_instance.is_subclass_of(class_name)
   end
 
-  # puts "Comparing types: #{lhs.eval_type()} and #{rhs.eval_type()}"
   return lhs.eval_type() == rhs.eval_type()
 end 
 
