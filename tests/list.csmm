@@ -20,6 +20,18 @@ class Program {
         WriteLine(list);
         int a = list.At(1);
         WriteLine(a);
+
+        List<bool> boolShit = [true, true, false];
+        WriteLine(boolShit);
+        boolShit.Add(1 == 2);
+        WriteLine(boolShit);
+
+        boolShit = [false, false, true && false || true];
+        WriteLine(boolShit);
+
+        #boolShit = [1, 2, 3];
+        #WriteLine(boolShit);
+        
         return 1;
     }
 }

@@ -20,7 +20,7 @@ class Variable < BaseNode
       type = new_value.is_a?(ListReassign) ? @value.type : @type_class
 
       if !is_assignable_to_type(new_value, type)
-        raise "Trying to assign #{new_value.evaluate()} to a variable of type #{@type_class}"
+        raise "Trying to assign #{new_value.get_elements()} to a variable of type #{@type_class}"
       end
       @value.set_elements(new_value.get_elements())
       return

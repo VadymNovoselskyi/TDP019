@@ -1,3 +1,4 @@
+require "./helpers.rb"
 require "./types/class.rb"
 require "./types/primitives.rb"
 
@@ -8,7 +9,7 @@ class ListInstance
     @type = type
 
     for element in elements
-      if !is_correct_type(element)
+      if !is_assignable_to_type(element, @type)
         raise "Type error: expected #{@type}, got #{element.eval_type()}"
       end
     end
@@ -19,16 +20,6 @@ class ListInstance
 
   def set_elements(new_elements)
     @elements = new_elements
-  end
-
-  def is_correct_type(element)
-    element = element.class == Variable ? element.value : element
-    element_type = element.eval_type()
-    if @contains_classes
-      return element_type == ClassInstanceType && element.is_subclass_of(@type.get_class_name())
-    end
-
-    return element_type == @type
   end
 
   def evaluate()
@@ -59,7 +50,7 @@ class ListInstance
   end
   
   def Add(element)
-    if !is_correct_type(element)
+    if !is_assignable_to_type(element, @type)
       raise "Type error: expected #{@type}, got #{element.eval_type()}"
     end
     @elements << element
