@@ -105,9 +105,18 @@ class Function < BaseNode
     end
 
     if node.is_a?(ClassMethodCall)
-      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      scope.run_class_method(node.variable_name, node.name, new_args)
-      return 
+      raise "Tried to handle a ClassMethodCall node directly in handle_executable. This should be handled by replace_lookups when it encounters the ClassMethodCall, not here."
+      # new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      # scope.run_class_method(node.variable_name, node.name, new_args)
+      # return 
+    end
+
+    if node.is_a?(ClassAttributeLookup)
+      # puts "Handling ClassAttributeLookup node '#{node}'"
+      replaced = replace_lookups(node, scope)
+      # puts "After replace_lookups, ClassAttributeLookup node is '#{replaced}'"
+      # scope.get_attribute(replaced.attribute_name, replaced.access_chain)
+      return
     end
     
     if node.class < Iterable
