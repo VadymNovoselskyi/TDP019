@@ -1,4 +1,5 @@
 require "./base.rb"
+require "./helpers.rb"
 require "./types/primitives.rb"
 require "./types/conditional.rb"
 require "./types/iterator.rb"
@@ -38,12 +39,9 @@ class Function < BaseNode
     end
 
     for arg, expected_arg in args.zip(clone_args) do
-      # TOOD: comment back in:
-      
-      # if arg.eval_type() != expected_arg.eval_type()
-      #   raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()} for argument '#{expected_arg.name}'"
-      # end
-      # puts "Reassigning argument: #{get_primitive_node(arg)} to #{expected_arg.inspect}"
+      if !is_of_equal_types(arg, expected_arg)
+        raise "Invalid argument type for function '#{@name}'. Expected #{expected_arg.eval_type()}, received #{arg.eval_type()} for argument '#{expected_arg.name}'"
+      end
       expected_arg.reassign(get_primitive_node(arg))
     end
     
@@ -102,13 +100,6 @@ class Function < BaseNode
     if node.is_a?(FunctionCall)
       call_function(scope, node.name, node.args)
       return
-    end
-
-    if node.is_a?(ClassMethodCall)
-      raise "Tried to handle a ClassMethodCall node directly in handle_executable. This should be handled by replace_lookups when it encounters the ClassMethodCall, not here."
-      # new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      # scope.run_class_method(node.variable_name, node.name, new_args)
-      # return 
     end
 
     if node.is_a?(ClassAttributeLookup)
@@ -200,7 +191,7 @@ class Function < BaseNode
     
     if node.is_a?(ReturnNode)
       root = replace_lookups(node, scope)
-      if root.eval_type() != @return_type
+      if !is_assignable_to_type(root, @return_type)
         raise "Invalid return type for function '#{@name}'. Expected #{@return_type}, returned #{root.eval_type()}"
       end
 

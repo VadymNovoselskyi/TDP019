@@ -1,4 +1,5 @@
 require "./types/variable.rb"
+require "./helpers.rb"
 
 class ClassVariable < Variable
   attr_accessor :access_attr
@@ -58,7 +59,7 @@ class ClassType
 
     @member_variables = member_variables
     @member_functions = member_functions
- end
+  end
 
   def new_instance(args = [])
     super_instance = nil
@@ -76,18 +77,12 @@ class ClassType
 
       for arg, base_constructor_arg in args.zip(base_constructor_args) do
         # puts "Resolving argument #{arg} for base constructor parameter #{base_constructor_arg}"
-        # TODO: we need a helper for this: both variable init, reassign, class args, function args etc
-        
-        # if (base_constructor_arg.eval_type().class == ClassType && arg.class == ClassInstantiation)
-        #   # puts "Checking if #{arg.evaluate()} is a subclass of #{base_constructor_arg.get_class_name()}"
-        #   if (!arg.evaluate().is_subclass_of(base_constructor_arg.eval_type().get_class_name()))
-        #     raise "Trying to assign #{arg.evaluate()} to a variable of type #{base_constructor_arg.eval_type().get_class_name()}"
-        #   end
-        # elsif arg.eval_type() != base_constructor_arg.eval_type()
-        #   raise "Invalid argument type for class '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
-        # end
+        if !is_of_equal_types(arg, base_constructor_arg)
+          raise "Invalid argument type for constructor of class '#{@name}'. Expected #{base_constructor_arg.eval_type()}, received #{arg.eval_type()}"
+        end  
         resolved_args[base_constructor_arg.name] = get_primitive_node(arg)
       end
+
       resolved_args = @base_constructor_call_args.map { |arg|
         if arg.is_a?(VariableLookup)
           resolved_args[arg.name]

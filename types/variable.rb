@@ -6,7 +6,7 @@ class Variable < BaseNode
   def initialize(type_class, name, value = nil)
     
     # puts "Checking type of variable assignment: name: #{name}; value #{value.inspect()}", " type #{type_class.inspect()}"
-    if value != nil && !is_lookup_node(value) && !is_assignable_to(value, type_class)
+    if value != nil && !is_lookup_node(value) && !is_assignable_to_type(value, type_class)
       raise "Trying to assign #{value.evaluate()} to a variable of type #{type_class}"
     end
     
@@ -17,8 +17,7 @@ class Variable < BaseNode
   
   def reassign(new_value)
     # puts "Reassigning variable #{@name} to new value #{new_value.inspect()} of type #{new_value.eval_type()}"
-    new_value = new_value.evaluate() if is_class_type(new_value)
-    if !is_assignable_to(new_value, @type_class)
+    if !is_assignable_to_type(new_value, @type_class)
       raise "Trying to assign #{new_value.evaluate()} to a variable of type #{@type_class}"
     end
     @value = new_value

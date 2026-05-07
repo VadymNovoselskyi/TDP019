@@ -2,9 +2,8 @@ require "./types/variable.rb"
 require "./types/class.rb"
 
 # Checks if the lhs type is equal to the rhs type (both need to be actual nodes) 
-def is_equal_types(lhs, rhs)
+def is_of_equal_types(lhs, rhs)
   if (lhs.eval_type().is_a?(ClassType) && rhs.eval_type().is_a?(ClassType))
-    # puts "Comparing class types: #{lhs.eval_type().get_class_name()} and #{rhs.eval_type().get_class_name()}"
     raise "Cannot compare two class types (neither is instance): #{lhs.eval_type().get_class_name()} and #{rhs.eval_type().get_class_name()}"
   end
 
@@ -20,28 +19,9 @@ def is_equal_types(lhs, rhs)
   # puts "Comparing types: #{lhs.eval_type()} and #{rhs.eval_type()}"
   return lhs.eval_type() == rhs.eval_type()
 end 
-# Asumes everything is a Variable 
-# Not classes: just eval_type 
-# 
-# Classes: 
-# .eval_type() returns INSTANCE of ClassType (.is_a(ClassType) returns true): 
-# Call .get_class_name() to get the class name (string) 
-# 
-# .eval_type() returns ClassInstantiation: 
-# Call .evaluate() to get the class instance, then call .get_class_name() to get the class name (string)
-# 
-# .eval_type() returns ClassInstanceType:
-# Call .get_class_name() to get the class name (string)
-# 
-# If both vars are either ClassType/ClassInstantiation/ClassInstanceType:
-# Call is_subclass_of() on one of the variables with name (string) of another
 
-def is_class_type(node)
-  # puts "Checking if node is a class type: #{node.eval_type()}"
-  return node.eval_type().is_a?(ClassType) || node.eval_type() == ClassInstanceType || node.eval_type() == ClassInstantiation
-end
-
-def is_assignable_to(node, type) 
+def is_assignable_to_type(node, type) 
+  node = get_value_from_node(node)
   type = type.is_a?(ClassType) ? type.get_class_name() : type
   # puts "Checking if #{node} is assignable to #{type}"
     
@@ -52,6 +32,32 @@ def is_assignable_to(node, type)
 
   # puts "Node is not a class type, comparing types: #{node.eval_type()} and #{type}"
   return node.eval_type() == type
+end
+
+def is_class_type(node)
+  # puts "Checking if node is a class type: #{node.eval_type()}"
+  return node.eval_type().is_a?(ClassType) || node.eval_type() == ClassInstanceType || node.eval_type() == ClassInstantiation
+end
+
+def get_value_from_node(node)
+  node_value = node
+  value_name = get_value_name_from_node(node)
+  while node_value.instance_variables.include?(value_name)
+    node_value = node_value.instance_variable_get(value_name)
+    value_name = get_value_name_from_node(node_value)
+  end
+  return node_value
+end
+
+def get_value_name_from_node(node)
+  node_value = node
+  value_name = nil
+  if node_value.instance_variables.include?(:@value)
+    value_name = :@value
+  elsif node_value.instance_variables.include?(:@new_value)
+    value_name = :@new_value
+  end
+  return value_name
 end
 
 def is_lookup_node(node)
