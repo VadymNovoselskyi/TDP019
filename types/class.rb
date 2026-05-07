@@ -111,6 +111,19 @@ class ClassType
  def get_class_name()
   return @name
  end
+
+ def is_subclass_of(class_name)
+  if (@name == class_name)
+    return true
+  end
+
+  if (@super != nil)
+    return @super.is_subclass_of(class_name)
+  end
+
+  return false
+ end
+
 end
 
 class ClassInstantiation 
@@ -131,6 +144,10 @@ class ClassInstantiation
 
   def clone()
     return ClassInstantiation.new(@class_type, @args.map(&:clone))
+  end
+
+  def is_subclass_of(class_name)
+    return @class_type.is_subclass_of(class_name)
   end
 end
 

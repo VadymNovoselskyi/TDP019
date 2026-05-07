@@ -245,16 +245,20 @@ class Function < BaseNode
       replaced_access_chain = replace_lookups(node.access_chain, scope, true)
       node.instance_variable_set(:@access_chain, replaced_access_chain)
       # puts "After replacing access chain: #{node}"
+
+      return node if only_children
+
       class_attribute_value = scope.get_attribute(node.attribute_name, node.access_chain)
       # puts "After ClassAttributeLookup: #{class_attribute_value}"
       return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
-      raise "Tried to replace lookups for a ClassMethodCall node. This should be handled by the chain itself, not replace_lookups."
+      raise "Tried to replace lookups for a ClassMethodCall node. This should be handled by the chain itself, not replace_lookups." if !only_children
+
       # puts "Before ClassMethodCall: #{node}"
-      # new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      # class_method_value = scope.run_class_method(node.method_name, new_args, node.access_chains)
-      # puts "After ClassMethodCall: #{class_method_value}"
-      # return class_method_value
+      new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
+      node.instance_variable_set(:@args, new_args)
+      # puts "After ClassMethodCall: #{node}"
+      return node
     elsif node.is_a?(ClassInstantiation)
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
       class_instantiation_value = node.class_type.new_instance(new_args)

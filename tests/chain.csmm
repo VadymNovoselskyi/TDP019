@@ -47,6 +47,7 @@ class Program {
         WriteLine(a.b.c.e());
 
         WriteLine(4444);
+        WriteLine(a.b.get_c());
         WriteLine(a.b.get_c().d);
         WriteLine(a.b.get_c().e());
         return 1;

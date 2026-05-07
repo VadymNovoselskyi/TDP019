@@ -29,6 +29,8 @@ reserved_words = [
   "break",
   "continue"
 ]
+
+# TODO: Make so that it doesn't match parts of the work (ex newName should be allowed)
 $id_regex = /^(?!#{reserved_words.join('|')})\w+/
 
 class CSMMParser
@@ -164,15 +166,16 @@ class CSMMParser
       end
 
       rule :stmt do 
+        match(:print_stmt)
+
         match(:assignment)
-
-        match(:class_method_call, ";")
+        
         match(:function_call, ";")
-
+        match(:access_chain, ";")
+        
         match(:conditional_stmt)
         match(:loop_stmt)
-
-        match(:print_stmt)
+        
 
         match(:return_stmt)
       end
@@ -345,47 +348,49 @@ class CSMMParser
         match('(', :logical_expr, ')') {|_, a, _| a }
 
         match(:class_instantiation)
-        # match(:class_method_call)
         match(:access_chain)
-
-        match(:list_access)
 
         match(:function_call)
         match(:literal)
       end
 
       rule :access_chain do
-        # match(:ID, ".", :ID) do | variable_name, _, attribute_name |
-        #   ClassAttributeLookup.new(variable_name, attribute_name)
-        # end
+        match(:ID, :opt_access_chain) do | attribute_name, access_chain |
+          ClassAttributeLookup.new(attribute_name, access_chain)
+        end
+      end
 
-        match(:ID, ".", :access_chain) do | attribute_name, _, access_chain |
+      rule :opt_access_chain do
+        match(".", :ID, :opt_access_chain) do | _, attribute_name, access_chain |
           ClassAttributeLookup.new(attribute_name, access_chain)
         end
 
-        match(:ID, "(", :opt_arg_list, ")", ".", :access_chain) do | method_name, _, args,_, _, access_chain, _ |
+        match(".", :ID, "(", :opt_arg_list, ")", :opt_access_chain) do | _, method_name, _, args, _, access_chain |
           ClassMethodCall.new(method_name, args, access_chain)
         end
-
-        match(:ID, "(", :opt_arg_list, ")") do | id, _, args, _ |
+        
+        match(".", :ID, "(", :opt_arg_list, ")") do | _, id, _, args, _ |
           FunctionCall.new(id, args)
         end
 
-        match(:ID) do | variable_name | 
-          VariableLookup.new(variable_name)
+        match("[", :logical_expr, "]", :opt_access_chain) do | _, index, _, access_chain |
+          ClassMethodCall.new("At", [index], access_chain)
         end
         
+        match("[", :logical_expr, "]") do | _, index, _ |
+          FunctionCall.new("At", [index])
+        end
+
+        match(".", :ID) do | _, variable_name | 
+          VariableLookup.new(variable_name)
+        end
+
+        match(:empty) { nil }
       end
 
       rule :class_instantiation do
         match("new", :class_type, "(", :opt_arg_list, ")") do | _, class_type, _, args, _ |
           ClassInstantiation.new(class_type, args)
-        end
-      end
-
-      rule :list_access do
-        match(:ID, "[", :logical_expr, "]") do | list_name, _, index, _ |
-          ClassMethodCall.new(list_name, "At", [index])
         end
       end
 

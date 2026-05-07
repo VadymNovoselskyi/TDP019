@@ -103,13 +103,22 @@ class Player : Entity {
         return weapon.attack();
     }
 
+    public void setName(char nName) {
+        name = nName;
+    }
+
 }
 
 class Program {    
     public int main() {
         Player player = new Player();
         WriteLine(player.name);
+        char playerName = 'j';
+        player.setName(playerName);
+
+        WriteLine(player.name);
         WriteLine(player.isAlive());
+        
         List<Enemy> enemies = [];
 
         for (int s = 0; s < 3; s = s + 1) {
@@ -129,10 +138,13 @@ class Program {
 
         enemies.Shuffle();
 
+        WriteLine(enemies[0]);
+        WriteLine(enemies[0].isAlive());
+
         #enemies[0].attack(20);
         for (int i = 0; i < enemies.Count; i = i + 1) {
             #enemies[i].attack(player.getDmg());
-            #WriteLine(enemies[i].isAlive());
+            WriteLine(enemies[i]);
         }
 
 
