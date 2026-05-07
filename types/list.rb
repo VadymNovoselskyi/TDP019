@@ -83,8 +83,9 @@ class ListInstance
 
 
   def get_attribute(node, _callee = nil)
-    if node.is_a?(FunctionCall)
-      return run_function(node.name, node.args)
+    if node.is_a?(FunctionCall) || node.is_a?(ClassMethodCall)
+      method_name = node.is_a?(FunctionCall) ? node.name : node.method_name
+      return run_function(method_name, node.args)
     end
     
     name = node.name
