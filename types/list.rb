@@ -82,7 +82,12 @@ class ListInstance
   end
 
 
-  def get_attribute(name, _callee = nil)
+  def get_attribute(node, _callee = nil)
+    if node.is_a?(FunctionCall)
+      return run_function(node.name, node.args)
+    end
+    
+    name = node.name
     if name == "Count"
       return Int.new(@elements.length)
     else
