@@ -277,14 +277,14 @@ class CSMMParser
       end
 
       rule :reassignment do
+        match(:ID, "=", :list_instantiation) do |name, _, values| 
+          ListReassign.new(name, values)
+        end
+
         match(:ID, "=", :logical_expr) do |name, _, value| 
           Reassign.new(name, value)
         end
 
-        # TODO: Add list reassignment
-        # match(:ID, "=", :list_instantiation) do |name, _, values| 
-        #   Reassign.new(name, values)
-        # end
 
         # Class attribute modification
         match(:ID, ".", :ID, "=", :logical_expr) do | variable_name, _, attribute_name, _, value |

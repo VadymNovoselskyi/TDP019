@@ -10,6 +10,8 @@ class Program {
         WriteLine(list);
         WriteLine(list.Count);
         WriteLine(list.At(list.Count - 1));
+
+        list = [10, 20, 30, 40];
         # list.Clear();
         # WriteLine(list.Count);
         WriteLine(list);

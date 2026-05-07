@@ -21,21 +21,26 @@ def is_of_equal_types(lhs, rhs)
 end 
 
 def is_assignable_to_type(node, type) 
-  node = get_value_from_node(node)
+  node_value = get_value_from_node(node)
   type = type.is_a?(ClassType) ? type.get_class_name() : type
-  # puts "Checking if #{node} is assignable to #{type}"
-    
-  if is_class_type(node)
-    # puts "Node is a class type, checking if it is a subclass of #{type} (#{node.is_subclass_of(type)})"
-    return node.is_subclass_of(type)
+  
+  if node.is_a?(ListReassign)
+    for element in node_value
+      if !is_assignable_to_type(element, type)
+        return false
+      end
+    end
+    return true
   end
 
-  # puts "Node is not a class type, comparing types: #{node.eval_type()} and #{type}"
-  return node.eval_type() == type
+  if is_class_type(node_value)
+    return node_value.is_subclass_of(type)
+  end
+
+  return node_value.eval_type() == type
 end
 
 def is_class_type(node)
-  # puts "Checking if node is a class type: #{node.eval_type()}"
   return node.eval_type().is_a?(ClassType) || node.eval_type() == ClassInstanceType || node.eval_type() == ClassInstantiation
 end
 

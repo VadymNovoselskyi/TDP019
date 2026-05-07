@@ -83,7 +83,7 @@ class Function < BaseNode
       if node_value.is_a?(FunctionCall)
         resolved_value = call_function(scope, node_value.name, node_value.args)
         node.instance_variable_set(value_name, resolved_value)
-      elsif node_value
+      elsif node_value && !node.is_a?(ListReassign)
         node_value = replace_lookups(node_value, scope)
         resolved_value = get_primitive_node(node_value)
         node.is_a?(Variable) ? node.reassign(resolved_value) : node.instance_variable_set(value_name, resolved_value)

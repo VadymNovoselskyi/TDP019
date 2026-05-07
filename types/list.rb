@@ -17,6 +17,10 @@ class ListInstance
     @contains_classes = type.is_a?(ClassType)
   end
 
+  def set_elements(new_elements)
+    @elements = new_elements
+  end
+
   def is_correct_type(element)
     element = element.class == Variable ? element.value : element
     element_type = element.eval_type()

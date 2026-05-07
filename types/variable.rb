@@ -16,7 +16,16 @@ class Variable < BaseNode
   end
   
   def reassign(new_value)
-    # puts "Reassigning variable #{@name} to new value #{new_value.inspect()} of type #{new_value.eval_type()}"
+    if (@type_class == ListInstance)
+      type = new_value.is_a?(ListReassign) ? @value.type : @type_class
+
+      if !is_assignable_to_type(new_value, type)
+        raise "Trying to assign #{new_value.evaluate()} to a variable of type #{@type_class}"
+      end
+      @value.set_elements(new_value.get_elements())
+      return
+    end
+
     if !is_assignable_to_type(new_value, @type_class)
       raise "Trying to assign #{new_value.evaluate()} to a variable of type #{@type_class}"
     end
@@ -80,7 +89,29 @@ class Reassign < BaseNode
   end
 
   def clone()
-    # raise "Tried to clone a Reassign node"
     return Reassign.new(@name, @new_value.clone())
+  end
+end
+
+class ListReassign < Reassign
+
+  # def initialize(name, new_value)
+  #   super(name, new_value)
+  # end
+
+  def eval_type()
+    raise "Should not evaluate type of a ListReassign node"
+  end
+  
+  def evaluate()
+    raise "Should not evaluate a ListReassign node directly"
+  end
+
+  def get_elements()
+    return @new_value
+  end
+
+  def clone()
+    return ListReassign.new(@name, @new_value.clone())
   end
 end
