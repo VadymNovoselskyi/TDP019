@@ -1,6 +1,7 @@
 require './parser.rb'
 require 'test/unit'
 
+# TODO: Add more test-files
 class TestCSMM < Test::Unit::TestCase
   def setup()
     @parser = CSMMParser.new()

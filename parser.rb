@@ -30,8 +30,7 @@ reserved_words = [
   "continue"
 ]
 
-# TODO: Make so that it doesn't match parts of the work (ex newName should be allowed)
-$id_regex = /^(?!#{reserved_words.join('|')})\w+/
+$id_regex = /^(?!(?:#{reserved_words.join('|')})\b)\w+/
 
 class CSMMParser
   def initialize
