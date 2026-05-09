@@ -6,6 +6,7 @@ class Program {
 
     public int main() {
         List<int> list = [1, 2, 3, 4];
+        WriteLine(list);
         list.Add(69);
         WriteLine(list);
         WriteLine(list.Count);

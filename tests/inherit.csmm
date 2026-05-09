@@ -65,6 +65,9 @@ class Program {
         WriteLine('z');
         TestTest t2 = testTestTest.testFunc();
         #WriteLine(t2.pub_var);
+
+        TestTest testTest = new TestTest(20, 30);
+        WriteLine(testTest.triple());
         return 1;
     }
 }
