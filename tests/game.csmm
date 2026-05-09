@@ -1,5 +1,6 @@
 class Weapon {
     protected int dmg;
+    public char name = 'W';
 
     public Weapon(int d) {
         dmg = d;
@@ -56,6 +57,7 @@ class Entity {
 
 class Enemy : Entity {
     public Weapon weapon;
+    public char name = 'e';
 
     public Enemy(Weapon w) : base(100) {
         weapon = w;
@@ -138,19 +140,20 @@ class Program {
         }
 
         enemies.Shuffle();
+        WriteLine(enemies);
 
-        WriteLine(enemies[0]);
+        WriteLine(enemies[0].name);
         WriteLine(enemies[0].isAlive());
 
         #enemies[0].attack(20);
         for (int i = 0; i < enemies.Count; i = i + 1) {
             #enemies[i].attack(player.getDmg());
             WriteLine(i);
-            WriteLine(enemies[i]);
+            WriteLine(enemies[i].weapon);
         }
 
 
-        #WriteLine(player.weapon.attack());
+        WriteLine(player.weapon.attack());
         return 1;
     }
 }

@@ -40,13 +40,23 @@ class ListInstance
   end
 
   # Actual list methods exposed to csmm
-  def At(index)
+  def At(index, access_chain = nil)
     index = index.evaluate()
     if index < 0 || index >= @elements.length
       raise "Index out of bounds: #{index}"
     end
 
-    return @elements[index]
+    element = @elements[index]
+    if access_chain == nil
+      return element
+    end
+    
+    element = get_value_from_node(element)
+    if !is_class_type(element)
+      raise "Access chain can only be used on class instances, but got #{element.eval_type()}"
+    end
+    return element.get_attribute(access_chain)
+
   end
   
   def Add(element)
@@ -80,6 +90,15 @@ class ListInstance
   def get_attribute(node, _callee = nil)
     if node.is_a?(FunctionCall) || node.is_a?(ClassMethodCall)
       method_name = node.is_a?(FunctionCall) ? node.name : node.method_name
+      
+      if node.is_a?(ClassMethodCall) && node.access_chain != nil
+        if method_name != "At" && node.access_chain != nil
+          raise "Access chain is only supported for the 'At' method, but got '#{method_name}' with access chain '#{access_chain}'"
+        end
+
+        return run_function(method_name, node.args + [node.access_chain])
+      end
+
       return run_function(method_name, node.args)
     end
     

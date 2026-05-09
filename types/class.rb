@@ -211,7 +211,7 @@ class ClassInstanceType
   elsif node.is_a?(FunctionCall)
     return run_function(node.name, node.args, callee)
   elsif node.is_a?(ClassAttributeLookup)
-    class_attribute_value = get_attribute(node.attribute_name, callee).value
+    class_attribute_value = get_value_from_node(get_attribute(node.attribute_name, callee))
     return class_attribute_value.handle_chain_access(node.access_chain, callee == "outside" ? "outside" : "subclass")
   elsif node.is_a?(ClassMethodCall)
     class_method_value = run_function(node.method_name, node.args, callee).evaluate()

@@ -194,6 +194,15 @@ class Function < BaseNode
       scoped_node = scope.get(node.name)
       replaced_node = replace_lookups(scoped_node, scope)
       return replaced_node
+    elsif node.is_a?(ClassAttributeLookup)
+      replaced_access_chain = replace_lookups(node.access_chain, scope, true)
+      replaced_node = node.clone()
+      replaced_node.instance_variable_set(:@access_chain, replaced_access_chain)
+      
+      return replaced_node if only_children
+      
+      class_attribute_value = scope.get_attribute(replaced_node.attribute_name, replaced_node.access_chain)
+      return class_attribute_value
     elsif node.is_a?(FunctionCall)
       if only_children
         new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
@@ -201,21 +210,13 @@ class Function < BaseNode
       end
       function_call_value = call_function(scope, node.name, node.args)
       return function_call_value
-    elsif node.is_a?(ClassAttributeLookup)
-      replaced_access_chain = replace_lookups(node.access_chain, scope, true)
-      replaced_node = node.clone()
-      replaced_node.instance_variable_set(:@access_chain, replaced_access_chain)
-
-      return replaced_node if only_children
-
-      class_attribute_value = scope.get_attribute(replaced_node.attribute_name, replaced_node.access_chain)
-      return class_attribute_value
     elsif node.is_a?(ClassMethodCall)
       raise "Tried to replace lookups for a ClassMethodCall node. This should be handled by the chain itself, not replace_lookups." if !only_children
 
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
-      node.instance_variable_set(:@args, new_args)
-      return node
+      cloned_node = node.clone()
+      cloned_node.instance_variable_set(:@args, new_args)
+      return cloned_node
     elsif node.is_a?(ClassInstantiation)
       new_args = node.args.map { | arg | replace_lookups(arg, scope).clone() }
       class_instantiation_value = node.class_type.new_instance(new_args)
