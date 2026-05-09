@@ -149,6 +149,7 @@ class Function < BaseNode
 
     if node.is_a?(WriteLine)
       if node.evaluate().length == 0
+        puts "#{get_write_line_prefix()}"
         return
       end
 
@@ -156,13 +157,16 @@ class Function < BaseNode
         arg_value = replace_lookups(arg, scope)
         if arg_value.eval_type() == Char
           value = arg_value.evaluate().chr()
+          puts "#{get_write_line_prefix()} #{value}"
         elsif arg_value.eval_type() == ListInstance
           vals = []
           for element in arg_value.evaluate().get_elements()
             element_value = replace_lookups(element, scope)
             vals << element_value.evaluate().to_s()
           end
+          puts "#{get_write_line_prefix()} [#{vals.join(", ")}]"
         else
+          puts "#{get_write_line_prefix()} #{arg_value.evaluate()}" 
         end
       end
       return
