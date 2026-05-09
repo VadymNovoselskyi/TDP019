@@ -112,6 +112,7 @@ class Function < BaseNode
         for executable in iter_executables do
           result = handle_executable(executable, iterable_scope)
           if (result.is_a?(Hash) && result[:should_break])
+            scope.consolidate_scope(iterable_scope)
             return
           elsif (result.is_a?(Hash) && result[:should_continue])
             break
